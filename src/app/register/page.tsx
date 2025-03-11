@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { useCreateUser } from "@/lib/hooks/user";
+import { formatLoginApiError } from "@/lib/formaters/format-login-api-error.formater";
 
 const signupFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -63,7 +64,7 @@ export default function RegisterPage() {
       });
 
       if (!result || result.error) {
-        setError(result?.error || "Failed to sign in after registration");
+        setError(formatLoginApiError(result));
         return;
       }
 

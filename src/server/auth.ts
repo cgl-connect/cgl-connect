@@ -9,7 +9,6 @@ import { type Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "./db";
 
-
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -34,8 +33,8 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: "/login",
+    error: "/login",
   },
   callbacks: {
     session({ session, token }) {
@@ -69,7 +68,7 @@ export const authOptions: NextAuthOptions = {
 
 function authorize(prisma: PrismaClient) {
   return async (
-    credentials: Record<"email" | "password", string> | undefined,
+    credentials: Record<"email" | "password", string> | undefined
   ) => {
     if (!credentials) throw new Error("Missing credentials");
     if (!credentials.email)
@@ -78,13 +77,17 @@ function authorize(prisma: PrismaClient) {
       throw new Error('"password" is required in credentials');
     const maybeUser = await prisma.user.findFirst({
       where: { email: credentials.email },
-      select: { id: true, email: true, password: true },
+      select: { id: true, email: true, password: true, name: true },
     });
     if (!maybeUser?.password) return null;
     // verify the input password with stored hash
     const isValid = await compare(credentials.password, maybeUser.password);
     if (!isValid) return null;
-    return { id: maybeUser.id, email: maybeUser.email };
+    return {
+      id: maybeUser.id,
+      email: maybeUser.email,
+      name: maybeUser.name,
+    };
   };
 }
 

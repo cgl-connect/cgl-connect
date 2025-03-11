@@ -10,12 +10,15 @@ import {
 } from "@/types/forms/login-form.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
+import { useAuthStore } from "@/store/auth-store";
+import { formatLoginApiError } from "@/lib/formaters/format-login-api-error.formater";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const authStore = useAuthStore();
 
   const {
     register,
@@ -23,29 +26,35 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      email: "",
+    values: {
+      remember: authStore.rememberData.remember,
+      email: authStore.rememberData.email,
       password: "",
-      remember: false,
     },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setLoginError(null);
-    
+
     try {
       const result = await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
-      
+
       if (!result || result.error) {
-        setLoginError(result?.error || "Login failed");
+        setLoginError(formatLoginApiError(result));
         return;
       }
-      
+
+      if (data.remember) {
+        authStore.setRememberData({ remember: true, email: data.email });
+      } else {
+        authStore.setRememberData({ remember: false, email: "" });
+      }
+
       router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
@@ -170,9 +179,7 @@ export default function LoginPage() {
 
           <div className="mt-4 text-center text-sm">
             <div className="text-gray-600">Test credentials:</div>
-            <div className="font-mono text-gray-800">
-              Email: cgl@gmail.com
-            </div>
+            <div className="font-mono text-gray-800">Email: cgl@gmail.com</div>
             <div className="font-mono text-gray-800">Password: password123</div>
           </div>
         </form>

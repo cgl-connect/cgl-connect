@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth-store";
 import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,13 +10,16 @@ import DeviceStats from "@/components/dashboard/device-stats";
 import LoadingSpinner from "@/components/loading-spinner";
 import AlertsOverview from "@/components/dashboard/alerts-overview";
 import RecentActivity from "@/components/dashboard/recent-activity";
+import { useSession } from "next-auth/react";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const session = useSession();
+
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
+      <header className="bg-slate-200 border-md shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900">
@@ -25,7 +27,7 @@ export default function DashboardPage() {
             </h1>
             <div className="flex items-center space-x-4">
               <div className="text-sm font-medium text-gray-700">
-                Welcome, nome do usuario
+                Welcome, {session?.data?.user?.name}
               </div>
               <button
                 onClick={() => {
@@ -39,7 +41,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </header>
-      <main>
+      <main className="bg-background">
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
             <div className="space-y-4">

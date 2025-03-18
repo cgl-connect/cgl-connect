@@ -1,29 +1,40 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function main() {
-  await prisma.deviceType.createMany({
-    data: [
-      {
-        name: "Humidity Sensor",
+  const deviceTypes = ['Temperature Sensor', 'Humidity Sensor', 'Pressure Sensor', 'Flow Sensor']
+  for (const deviceType of deviceTypes) {
+    await prisma.deviceType.upsert({
+      where: {
+        name: deviceType,
       },
-      {
-        name: "Pressure Sensor",
+      update: {},
+      create: {
+        name: deviceType,
       },
-      {
-        name: "Flow Sensor",
-      },
-    ],
-  });
+    })
+  }
+
+  await prisma.user.upsert({
+    where: {
+      email: 'cgl@email.com',
+    },
+    create: {
+      email: 'cgl@email.com',
+      password: bcrypt.hashSync('password123'),
+    },
+    update: {},
+  })
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
+    await prisma.$disconnect()
   })
   .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

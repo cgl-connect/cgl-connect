@@ -36,6 +36,12 @@ const metadata = {
                     name: "role",
                     type: "Role",
                     attributes: [{ "name": "@default", "args": [] }],
+                }, devices: {
+                    name: "devices",
+                    type: "Device",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'user',
                 },
             }
             , uniqueConstraints: {
@@ -45,6 +51,261 @@ const metadata = {
                 }, email: {
                     name: "email",
                     fields: ["email"]
+                },
+            }
+            ,
+        }
+        ,
+        deviceType: {
+            name: 'DeviceType', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, name: {
+                    name: "name",
+                    type: "String",
+                }, devices: {
+                    name: "devices",
+                    type: "Device",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'deviceType',
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
+                }, name: {
+                    name: "name",
+                    fields: ["name"]
+                },
+            }
+            ,
+        }
+        ,
+        device: {
+            name: 'Device', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, name: {
+                    name: "name",
+                    type: "String",
+                }, description: {
+                    name: "description",
+                    type: "String",
+                    isOptional: true,
+                }, status: {
+                    name: "status",
+                    type: "DeviceStatus",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, metadata: {
+                    name: "metadata",
+                    type: "Json",
+                    isOptional: true,
+                }, deviceType: {
+                    name: "deviceType",
+                    type: "DeviceType",
+                    isDataModel: true,
+                    backLink: 'devices',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "deviceTypeId" },
+                }, deviceTypeId: {
+                    name: "deviceTypeId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'deviceType',
+                }, userId: {
+                    name: "userId",
+                    type: "String",
+                    isOptional: true,
+                    isForeignKey: true,
+                    relationField: 'user',
+                }, user: {
+                    name: "user",
+                    type: "User",
+                    isDataModel: true,
+                    isOptional: true,
+                    backLink: 'devices',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "userId" },
+                }, locationId: {
+                    name: "locationId",
+                    type: "String",
+                    isOptional: true,
+                    isForeignKey: true,
+                    relationField: 'location',
+                }, location: {
+                    name: "location",
+                    type: "Location",
+                    isDataModel: true,
+                    isOptional: true,
+                    backLink: 'devices',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "locationId" },
+                }, telemetry: {
+                    name: "telemetry",
+                    type: "Telemetry",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'device',
+                }, alerts: {
+                    name: "alerts",
+                    type: "Alert",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'device',
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
+                },
+            }
+            ,
+        }
+        ,
+        location: {
+            name: 'Location', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, name: {
+                    name: "name",
+                    type: "String",
+                }, address: {
+                    name: "address",
+                    type: "String",
+                    isOptional: true,
+                }, devices: {
+                    name: "devices",
+                    type: "Device",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'location',
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
+                },
+            }
+            ,
+        }
+        ,
+        telemetry: {
+            name: 'Telemetry', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, deviceId: {
+                    name: "deviceId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'device',
+                }, device: {
+                    name: "device",
+                    type: "Device",
+                    isDataModel: true,
+                    backLink: 'telemetry',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "deviceId" },
+                }, data: {
+                    name: "data",
+                    type: "Json",
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
+                },
+            }
+            ,
+        }
+        ,
+        alert: {
+            name: 'Alert', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, deviceId: {
+                    name: "deviceId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'device',
+                }, device: {
+                    name: "device",
+                    type: "Device",
+                    isDataModel: true,
+                    backLink: 'alerts',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "deviceId" },
+                }, severity: {
+                    name: "severity",
+                    type: "String",
+                }, message: {
+                    name: "message",
+                    type: "String",
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
                 },
             }
             ,

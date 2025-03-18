@@ -15,16 +15,16 @@ datasource db {
 }
 
 abstract model BaseModel {
-  id        String   @id @default(ulid())
+  id        String   @id @default(ulid()) @allow('read', true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 model User extends BaseModel {
-  email    String  @unique
-  password String  @password @omit
+  email    String   @unique
+  password String   @password @omit
   name     String?
-  role     Role    @default(USER)
+  role     Role     @default(USER)
+  devices  Device[]
 
   @@allow('create,read', true)
   @@allow('update,delete', auth().role == 'ADMIN')
@@ -33,4 +33,53 @@ model User extends BaseModel {
 enum Role {
   ADMIN
   USER
+}
+
+model DeviceType extends BaseModel {
+  name    String   @unique
+  devices Device[]
+
+  @@allow('all', true)
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  UNKNOWN
+}
+
+model Device extends BaseModel {
+  name         String
+  description  String?
+  status       DeviceStatus @default(UNKNOWN)
+  metadata     Json?
+  deviceType   DeviceType   @relation(fields: [deviceTypeId], references: [id])
+  deviceTypeId String
+  userId       String?
+  user         User?        @relation(fields: [userId], references: [id])
+  locationId   String?
+  location     Location?    @relation(fields: [locationId], references: [id])
+  telemetry    Telemetry[]
+  alerts       Alert[]
+
+  @@allow('all', true)
+}
+
+model Location extends BaseModel {
+  name    String
+  address String?
+  devices Device[]
+}
+
+model Telemetry extends BaseModel {
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id])
+  data     Json
+}
+
+model Alert extends BaseModel {
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id])
+  severity String
+  message  String
 }

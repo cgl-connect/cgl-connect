@@ -6,6 +6,11 @@
 // @ts-nocheck
 
 export * from './user';
+export * from './device-type';
+export * from './device';
+export * from './location';
+export * from './telemetry';
+export * from './alert';
 export { getQueryKey } from '@zenstackhq/tanstack-query/runtime-v5';
 export { Provider } from '@zenstackhq/tanstack-query/runtime-v5/react';
 export { default as metadata } from './__model_meta';

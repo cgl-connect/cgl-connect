@@ -17,6 +17,12 @@ enum Role {
   USER
 }
 
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  UNKNOWN
+}
+
 model User {
   id        String   @id() @default(ulid())
   createdAt DateTime @default(now())
@@ -25,4 +31,59 @@ model User {
   password  String
   name      String?
   role      Role     @default(USER)
+  devices   Device[]
+}
+
+model DeviceType {
+  id        String   @id() @default(ulid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  name      String   @unique()
+  devices   Device[]
+}
+
+model Device {
+  id           String       @id() @default(ulid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt()
+  name         String
+  description  String?
+  status       DeviceStatus @default(UNKNOWN)
+  metadata     Json?
+  deviceType   DeviceType   @relation(fields: [deviceTypeId], references: [id])
+  deviceTypeId String
+  userId       String?
+  user         User?        @relation(fields: [userId], references: [id])
+  locationId   String?
+  location     Location?    @relation(fields: [locationId], references: [id])
+  telemetry    Telemetry[]
+  alerts       Alert[]
+}
+
+model Location {
+  id        String   @id() @default(ulid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  name      String
+  address   String?
+  devices   Device[]
+}
+
+model Telemetry {
+  id        String   @id() @default(ulid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+  data      Json
+}
+
+model Alert {
+  id        String   @id() @default(ulid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+  severity  String
+  message   String
 }

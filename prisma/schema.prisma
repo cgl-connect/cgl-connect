@@ -56,8 +56,19 @@ model Device {
   user         User?        @relation(fields: [userId], references: [id])
   locationId   String?
   location     Location?    @relation(fields: [locationId], references: [id])
+  mqttConfig   MQTTConfig[]
   telemetry    Telemetry[]
   alerts       Alert[]
+}
+
+model MQTTConfig {
+  id           String   @id() @default(ulid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt()
+  deviceId     String
+  device       Device   @relation(fields: [deviceId], references: [id])
+  topicPrefix  String   @unique()
+  listenTopics String[]
 }
 
 model Location {
@@ -70,12 +81,15 @@ model Location {
 }
 
 model Telemetry {
-  id        String   @id() @default(ulid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  deviceId  String
-  device    Device   @relation(fields: [deviceId], references: [id])
-  data      Json
+  id         String   @id() @default(ulid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+  deviceId   String
+  device     Device   @relation(fields: [deviceId], references: [id])
+  receivedAt DateTime @default(now())
+  data       Json
+
+  @@index([deviceId, receivedAt])
 }
 
 model Alert {

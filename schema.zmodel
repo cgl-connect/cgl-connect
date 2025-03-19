@@ -59,8 +59,20 @@ model Device extends BaseModel {
   user         User?        @relation(fields: [userId], references: [id])
   locationId   String?
   location     Location?    @relation(fields: [locationId], references: [id])
+
+  // mqtt
+  mqttConfig   MQTTConfig[]
   telemetry    Telemetry[]
   alerts       Alert[]
+
+  @@allow('all', true)
+}
+
+model MQTTConfig extends BaseModel {
+  deviceId     String
+  device       Device   @relation(fields: [deviceId], references: [id])
+  topicPrefix  String   @unique
+  listenTopics String[]
 
   @@allow('all', true)
 }
@@ -72,9 +84,13 @@ model Location extends BaseModel {
 }
 
 model Telemetry extends BaseModel {
-  deviceId String
-  device   Device @relation(fields: [deviceId], references: [id])
-  data     Json
+  deviceId   String
+  device     Device   @relation(fields: [deviceId], references: [id])
+  receivedAt DateTime @default(now())
+  data       Json
+
+  @@index([deviceId, receivedAt])
+  @@allow('all', true)
 }
 
 model Alert extends BaseModel {

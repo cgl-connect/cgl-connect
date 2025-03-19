@@ -1,21 +1,26 @@
-import mqtt, { IClientOptions, IClientPublishOptions, IClientSubscribeOptions, MqttClient as MQTTClient } from 'mqtt';
-import { EventEmitter } from 'events';
+import mqtt, {
+  IClientOptions,
+  IClientPublishOptions,
+  IClientSubscribeOptions,
+  MqttClient as MQTTClient
+} from 'mqtt'
+import { EventEmitter } from 'events'
 
 export interface MqttMessage {
-  topic: string;
-  payload: string;
-  packet: mqtt.IPublishPacket;
+  topic: string
+  payload: string
+  packet: mqtt.IPublishPacket
 }
 
 export interface MqttConnectionOptions extends IClientOptions {
-  reconnectPeriod?: number;
-  connectTimeout?: number;
+  reconnectPeriod?: number
+  connectTimeout?: number
 }
 
 export class MqttClient extends EventEmitter {
-  private client: MQTTClient;
-  private isConnected: boolean = false;
-  private subscriptions: Map<string, mqtt.ISubscriptionGrant[]> = new Map();
+  private client: MQTTClient
+  private isConnected: boolean = false
+  private subscriptions: Map<string, mqtt.ISubscriptionGrant[]> = new Map()
 
   /**
    * Creates a new MQTT client
@@ -23,49 +28,54 @@ export class MqttClient extends EventEmitter {
    * @param options - Optional client connection options
    */
   constructor(brokerUrl: string, options: MqttConnectionOptions = {}) {
-    super();
-    
+    super()
+
     // Set default options if not provided
     const defaultOptions: MqttConnectionOptions = {
       reconnectPeriod: 5000,
       connectTimeout: 10000,
-      ...options,
-    };
+      ...options
+    }
 
-    this.client = mqtt.connect(brokerUrl, defaultOptions);
+    this.client = mqtt.connect(brokerUrl, defaultOptions)
 
     this.client.on('connect', () => {
-      this.isConnected = true;
-      this.emit('connect');
-    });
+      this.isConnected = true
+      this.emit('connect')
+    })
 
     this.client.on('reconnect', () => {
-      this.emit('reconnect');
-    });
+      this.emit('reconnect')
+    })
 
-    this.client.on('error', (error) => {
-      this.emit('error', error);
-    });
+    this.client.on('error', error => {
+      this.emit('error', error)
+    })
 
     this.client.on('offline', () => {
-      this.isConnected = false;
-      this.emit('offline');
-    });
+      this.isConnected = false
+      this.emit('offline')
+    })
 
     this.client.on('close', () => {
-      this.isConnected = false;
-      this.emit('close');
-    });
+      this.isConnected = false
+      this.emit('close')
+    })
 
     this.client.on('message', (topic, messageBuffer, packet) => {
+      console.log('message received', {
+        topic,
+        messageBuffer: messageBuffer.toString(),
+        packet
+      })
       const message: MqttMessage = {
         topic,
         payload: messageBuffer.toString(),
-        packet,
-      };
-      
-      this.emit('message', message);
-    });
+        packet
+      }
+
+      this.emit('message', message)
+    })
   }
 
   /**
@@ -75,32 +85,32 @@ export class MqttClient extends EventEmitter {
    * @returns Promise that resolves with subscription grants
    */
   public subscribe(
-    topic: string | string[], 
+    topic: string | string[],
     options: Partial<IClientSubscribeOptions> = { qos: 0 }
   ): Promise<mqtt.ISubscriptionGrant[]> {
     const subscribeOptions: IClientSubscribeOptions = {
       qos: 0,
       ...options
-    };
+    }
 
     return new Promise((resolve, reject) => {
       this.client.subscribe(topic, subscribeOptions, (error, grants) => {
         if (error) {
-          this.emit('error', error);
-          return reject(error);
+          this.emit('error', error)
+          return reject(error)
         }
 
         if (grants) {
-          const topicStr = Array.isArray(topic) ? topic.join(',') : topic;
-          this.subscriptions.set(topicStr, grants);
-          
-          this.emit('subscribe', { topic, grants });
-          resolve(grants);
+          const topicStr = Array.isArray(topic) ? topic.join(',') : topic
+          this.subscriptions.set(topicStr, grants)
+
+          this.emit('subscribe', { topic, grants })
+          resolve(grants)
         } else {
-          resolve([]);
+          resolve([])
         }
-      });
-    });
+      })
+    })
   }
 
   /**
@@ -111,21 +121,21 @@ export class MqttClient extends EventEmitter {
    * @returns Promise that resolves when message is published
    */
   public publish(
-    topic: string, 
-    message: string | Buffer, 
+    topic: string,
+    message: string | Buffer,
     options: IClientPublishOptions = {}
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.client.publish(topic, message, options, (error) => {
+      this.client.publish(topic, message, options, error => {
         if (error) {
-          this.emit('error', error);
-          return reject(error);
+          this.emit('error', error)
+          return reject(error)
         }
-        
-        this.emit('publish', { topic, message });
-        resolve();
-      });
-    });
+
+        this.emit('publish', { topic, message })
+        resolve()
+      })
+    })
   }
 
   /**
@@ -135,20 +145,20 @@ export class MqttClient extends EventEmitter {
    */
   public unsubscribe(topic: string | string[]): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.client.unsubscribe(topic, (error) => {
+      this.client.unsubscribe(topic, error => {
         if (error) {
-          this.emit('error', error);
-          return reject(error);
+          this.emit('error', error)
+          return reject(error)
         }
-        
+
         // Clean up subscriptions map
-        const topicStr = Array.isArray(topic) ? topic.join(',') : topic;
-        this.subscriptions.delete(topicStr);
-        
-        this.emit('unsubscribe', { topic });
-        resolve();
-      });
-    });
+        const topicStr = Array.isArray(topic) ? topic.join(',') : topic
+        this.subscriptions.delete(topicStr)
+
+        this.emit('unsubscribe', { topic })
+        resolve()
+      })
+    })
   }
 
   /**
@@ -157,8 +167,8 @@ export class MqttClient extends EventEmitter {
    * @returns this instance for chaining
    */
   public onMessage(callback: (message: MqttMessage) => void): this {
-    this.on('message', callback);
-    return this;
+    this.on('message', callback)
+    return this
   }
 
   /**
@@ -166,7 +176,7 @@ export class MqttClient extends EventEmitter {
    * @returns boolean indicating if connected
    */
   public isClientConnected(): boolean {
-    return this.isConnected;
+    return this.isConnected
   }
 
   /**
@@ -174,17 +184,17 @@ export class MqttClient extends EventEmitter {
    * @returns Promise that resolves when disconnected
    */
   public disconnect(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.isConnected) {
-        return resolve();
+        return resolve()
       }
-      
+
       this.client.end(false, () => {
-        this.isConnected = false;
-        this.emit('disconnect');
-        resolve();
-      });
-    });
+        this.isConnected = false
+        this.emit('disconnect')
+        resolve()
+      })
+    })
   }
 
   /**
@@ -193,7 +203,7 @@ export class MqttClient extends EventEmitter {
    */
   public reconnect(): void {
     if (!this.isConnected) {
-      this.client.reconnect();
+      this.client.reconnect()
     }
   }
 
@@ -202,6 +212,6 @@ export class MqttClient extends EventEmitter {
    * @returns Map of topic strings to subscription grants
    */
   public getSubscriptions(): Map<string, mqtt.ISubscriptionGrant[]> {
-    return new Map(this.subscriptions);
+    return new Map(this.subscriptions)
   }
 }

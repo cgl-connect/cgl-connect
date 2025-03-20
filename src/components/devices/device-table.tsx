@@ -32,6 +32,7 @@ import { DeviceStatus } from "@prisma/client";
 import DeviceForm from "./device-form";
 import { useDeleteDevice } from "@/lib/hooks/device";
 import { dayJs } from "@/utils/dayjs";
+import DeviceActivityMenu from "./device-activity-menu";
 
 interface DeviceWithRelations {
   id: string;
@@ -108,6 +109,7 @@ export default function DeviceTable({ devices, onRefresh }: DeviceTableProps) {
               <TableCell>{dayJs(device.updatedAt).fromNow()}</TableCell>
               <TableCell>{device.user?.name || "—"}</TableCell>
               <TableCell>
+                <DeviceActivityMenu deviceId={device.id} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">

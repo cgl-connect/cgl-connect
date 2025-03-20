@@ -1,39 +1,40 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+  CardTitle
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import {
   ChevronLeft,
   Edit,
   AlertTriangle,
   Activity,
-  Settings,
-} from "lucide-react";
-import DeviceForm from "@/components/devices/device-form";
-import LoadingSpinner from "@/components/loading-spinner";
-import { useFindUniqueDevice } from "@/lib/hooks";
+  Settings
+} from 'lucide-react'
+import DeviceForm from '@/components/devices/device-form'
+import LoadingSpinner from '@/components/loading-spinner'
+import { useFindUniqueDevice } from '@/lib/hooks'
+import DeviceActivityMenu from '@/components/devices/device-activity-menu'
 
 export default function DeviceDetailPage() {
-  const router = useRouter();
-  const params = useParams();
-  const deviceId = params.id as string;
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const router = useRouter()
+  const params = useParams()
+  const deviceId = params.id as string
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const {
     data: device,
     isLoading,
-    refetch,
+    refetch
   } = useFindUniqueDevice({
     where: { id: deviceId },
     include: {
@@ -42,25 +43,25 @@ export default function DeviceDetailPage() {
       user: true,
       telemetry: {
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc'
         },
-        take: 10,
+        take: 10
       },
       alerts: {
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc'
         },
-        take: 5,
-      },
-    },
-  });
+        take: 5
+      }
+    }
+  })
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner size="lg" />
       </div>
-    );
+    )
   }
 
   if (!device) {
@@ -69,7 +70,7 @@ export default function DeviceDetailPage() {
         <div className="flex items-center mb-6">
           <Button
             variant="ghost"
-            onClick={() => router.push("/dashboard/devices")}
+            onClick={() => router.push('/dashboard/devices')}
             className="mr-4"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
@@ -84,29 +85,29 @@ export default function DeviceDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button onClick={() => router.push("/dashboard/devices")}>
+            <Button onClick={() => router.push('/dashboard/devices')}>
               Return to Device List
             </Button>
           </CardFooter>
         </Card>
       </div>
-    );
+    )
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "ONLINE":
-        return <Badge className="bg-green-500">Online</Badge>;
-      case "OFFLINE":
+      case 'ONLINE':
+        return <Badge className="bg-green-500">Online</Badge>
+      case 'OFFLINE':
         return (
           <Badge variant="secondary" className="bg-gray-500">
             Offline
           </Badge>
-        );
+        )
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">Unknown</Badge>
     }
-  };
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -114,7 +115,7 @@ export default function DeviceDetailPage() {
         <div className="flex items-center">
           <Button
             variant="ghost"
-            onClick={() => router.push("/dashboard/devices")}
+            onClick={() => router.push('/dashboard/devices')}
             className="mr-4"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
@@ -123,13 +124,16 @@ export default function DeviceDetailPage() {
           <h1 className="text-2xl font-bold">{device.name}</h1>
           <div className="ml-3">{getStatusBadge(device.status)}</div>
         </div>
-        <Button
-          onClick={() => setIsEditModalOpen(true)}
-          className="flex items-center gap-1"
-        >
-          <Edit className="h-4 w-4" />
-          Edit Device
-        </Button>
+        <div className="flex items-center gap-2">
+          <DeviceActivityMenu deviceId={device.id} />
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-1"
+          >
+            <Edit className="h-4 w-4" />
+            Edit Device
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -149,19 +153,19 @@ export default function DeviceDetailPage() {
               <div className="text-sm font-medium text-gray-500">
                 Description
               </div>
-              <div>{device.description || "No description provided"}</div>
+              <div>{device.description || 'No description provided'}</div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">Location</div>
-              <div>{device.location?.name || "No location assigned"}</div>
+              <div>{device.location?.name || 'No location assigned'}</div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">
                 Assigned User
               </div>
-              <div>{device.user?.name || "No user assigned"}</div>
+              <div>{device.user?.name || 'No user assigned'}</div>
             </div>
 
             <div>
@@ -207,7 +211,7 @@ export default function DeviceDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {device.telemetry.map((item) => (
+                    {device.telemetry.map(item => (
                       <div key={item.id} className="border p-4 rounded-lg">
                         <div className="flex justify-between items-center mb-2">
                           <div className="text-sm text-gray-500">
@@ -230,15 +234,15 @@ export default function DeviceDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {device.alerts.map((alert) => (
+                    {device.alerts.map(alert => (
                       <div
                         key={alert.id}
                         className={`border p-4 rounded-lg ${
-                          alert.severity === "HIGH"
-                            ? "border-red-300 bg-red-50"
-                            : alert.severity === "MEDIUM"
-                            ? "border-yellow-300 bg-yellow-50"
-                            : "border-blue-300 bg-blue-50"
+                          alert.severity === 'HIGH'
+                            ? 'border-red-300 bg-red-50'
+                            : alert.severity === 'MEDIUM'
+                              ? 'border-yellow-300 bg-yellow-50'
+                              : 'border-blue-300 bg-blue-50'
                         }`}
                       >
                         <div className="flex justify-between items-center mb-2">
@@ -294,11 +298,11 @@ export default function DeviceDetailPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={() => {
-          setIsEditModalOpen(false);
-          refetch();
+          setIsEditModalOpen(false)
+          refetch()
         }}
         deviceData={device}
       />
     </div>
-  );
+  )
 }

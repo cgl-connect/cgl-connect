@@ -17,6 +17,18 @@ enum Role {
   USER
 }
 
+enum TopicSuffix {
+  STATUS_ONOFF
+  STATUS_BRIGHTNESS
+  STATUS_COLOR
+  STATUS_TEMPERATURE
+  STATUS_HUMIDITY
+  COMMAND_ONOFF
+  COMMAND_BRIGHTNESS
+  COMMAND_COLOR
+  COMMAND_TEMPERATURE
+}
+
 enum DeviceStatus {
   ONLINE
   OFFLINE
@@ -35,11 +47,12 @@ model User {
 }
 
 model DeviceType {
-  id        String   @id() @default(ulid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  name      String   @unique()
-  devices   Device[]
+  id            String        @id() @default(ulid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt()
+  name          String        @unique()
+  devices       Device[]
+  topicSuffixes TopicSuffix[]
 }
 
 model Device {
@@ -56,19 +69,9 @@ model Device {
   user         User?        @relation(fields: [userId], references: [id])
   locationId   String?
   location     Location?    @relation(fields: [locationId], references: [id])
-  mqttConfig   MQTTConfig[]
+  baseTopic    String       @unique()
   telemetry    Telemetry[]
   alerts       Alert[]
-}
-
-model MQTTConfig {
-  id           String   @id() @default(ulid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt()
-  deviceId     String
-  device       Device   @relation(fields: [deviceId], references: [id])
-  topicPrefix  String   @unique()
-  listenTopics String[]
 }
 
 model Location {
@@ -81,15 +84,16 @@ model Location {
 }
 
 model Telemetry {
-  id         String   @id() @default(ulid())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt()
-  deviceId   String
-  device     Device   @relation(fields: [deviceId], references: [id])
-  receivedAt DateTime @default(now())
-  data       Json
+  id          String      @id() @default(ulid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt()
+  receivedAt  DateTime    @default(now())
+  data        Json
+  topicSuffix TopicSuffix
+  device      Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId    String
 
-  @@index([deviceId, receivedAt])
+  @@index([deviceId, topicSuffix, receivedAt])
 }
 
 model Alert {
@@ -97,7 +101,7 @@ model Alert {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
   deviceId  String
-  device    Device   @relation(fields: [deviceId], references: [id])
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   severity  String
   message   String
 }

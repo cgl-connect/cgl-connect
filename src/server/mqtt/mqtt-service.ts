@@ -1,61 +1,79 @@
-import { db } from "../db";
-import { MqttClient, MqttMessage } from "./mqtt";
-import { Device, DeviceStatus, Prisma } from "@prisma/client";
-import { EventEmitter } from "events";
+import { topicSuffixToPath } from '@/lib/mqtt/topicMapping'
+import { db } from '../db'
+import { MqttClient, MqttMessage } from './mqtt'
+import { DeviceStatus, Prisma, TopicSuffix } from '@prisma/client'
+import { EventEmitter } from 'events'
 
 export interface MqttServiceOptions {
-  brokerUrl: string;
-  clientId?: string;
-  username?: string;
-  password?: string;
+  brokerUrl: string
+  clientId?: string
+  username?: string
+  password?: string
 }
 
 export class MqttService extends EventEmitter {
-  private client: MqttClient;
-  private _isRunning = false;
-  private topicToDeviceMap: Map<string, string> = new Map(); 
+  private client: MqttClient
+  private _isRunning = false
+  private topicToDeviceMap: Map<
+    string,
+    { deviceId: string; topicSuffix: TopicSuffix }
+  > = new Map()
+
   public get isRunning(): boolean {
-    return this._isRunning;
+    return this._isRunning
   }
+
   public isClientConnected(): boolean {
     return this.client.isClientConnected()
   }
 
   constructor(options: MqttServiceOptions) {
-    super();
-    
+    super()
+
     this.client = new MqttClient(options.brokerUrl, {
-      clientId: options.clientId || `cgl-connect-${Math.random().toString(16).substring(2, 10)}`,
+      clientId:
+        options.clientId ||
+        `cgl-connect-${Math.random().toString(16).substring(2, 10)}`,
       username: options.username,
       password: options.password,
-      reconnectPeriod: 5000,
-    });
+      reconnectPeriod: 5000
+    })
 
-    this.setupEventHandlers();
+    this.setupEventHandlers()
   }
 
   private setupEventHandlers() {
     this.client.on('connect', () => {
-      console.log('Connected to MQTT broker');
-      this.emit('connect');
-      
-      
-      if (this._isRunning) {
-        this.resubscribeToAllTopics();
-      }
-    });
+      console.log('Connected to MQTT broker')
+      this.emit('connect')
 
-    this.client.on('error', (error) => {
-      console.error('MQTT error:', error);
-      this.emit('error', error);
-    });
+      if (this._isRunning) {
+        this.resubscribeToAllTopics()
+      }
+    })
+
+    this.client.on('error', error => {
+      console.error('MQTT error:', error)
+      this.emit('error', error)
+    })
 
     this.client.on('offline', () => {
-      console.log('MQTT client is offline');
-      this.emit('offline');
-    });
+      console.log('MQTT client is offline')
+      this.emit('offline')
+    })
 
-    this.client.on('message', this.handleMessage.bind(this));
+    this.client.on('message', this.handleMessage.bind(this))
+  }
+
+  /**
+   * Builds a full MQTT topic from base topic and suffix
+   */
+  private buildFullTopic(baseTopic: string, suffix: TopicSuffix): string {
+    const path = topicSuffixToPath[suffix]
+    if (!path) {
+      throw new Error(`No mapping found for topic suffix: ${suffix}`)
+    }
+    return `${baseTopic}/${path}`
   }
 
   /**
@@ -63,46 +81,44 @@ export class MqttService extends EventEmitter {
    */
   private async handleMessage(message: MqttMessage) {
     try {
-      
-      const deviceId = this.topicToDeviceMap.get(message.topic);
-      if (!deviceId) {
-        console.warn(`Received message for unknown topic: ${message.topic}`);
-        return;
+      const deviceInfo = this.topicToDeviceMap.get(message.topic)
+      if (!deviceInfo) {
+        console.warn(`Received message for unknown topic: ${message.topic}`)
+        return
       }
 
-      
-      let data: any;
+      const { deviceId, topicSuffix } = deviceInfo
+
+      let data: any
       try {
-        data = JSON.parse(message.payload);
+        data = JSON.parse(message.payload)
       } catch (e) {
-        
-        data = { raw: message.payload };
+        data = { raw: message.payload }
       }
 
-      
       await db.telemetry.create({
         data: {
           deviceId,
+          topicSuffix,
           data: data as Prisma.InputJsonValue,
-          receivedAt: new Date(),
-        },
-      });
+          receivedAt: new Date()
+        }
+      })
 
-      
       await db.device.update({
         where: { id: deviceId },
-        data: { status: 'ONLINE' },
-      });
+        data: { status: 'ONLINE' as DeviceStatus }
+      })
 
-      
       this.emit('telemetry', {
         deviceId,
+        topicSuffix,
         topic: message.topic,
-        data,
-      });
+        data
+      })
     } catch (error) {
-      console.error('Error handling MQTT message:', error);
-      this.emit('error', error);
+      console.error('Error handling MQTT message:', error)
+      this.emit('error', error)
     }
   }
 
@@ -111,61 +127,65 @@ export class MqttService extends EventEmitter {
    */
   public async start(): Promise<void> {
     if (this._isRunning) {
-      return;
+      return
     }
 
-    this._isRunning = true;
-    
-    
-    await this.loadAndSubscribe();
-    
-    
+    this._isRunning = true
+
+    await this.loadAndSubscribe()
+
     setInterval(async () => {
-      await this.loadAndSubscribe();
-    }, 5 * 60 * 1000); 
-    
-    
+      await this.loadAndSubscribe()
+    }, 60 * 1000)
+
     setInterval(async () => {
-      await this.checkDeviceStatuses();
-    }, 60 * 1000); 
-    
-    console.log('MQTT service started');
+      await this.checkDeviceStatuses()
+    }, 60 * 1000)
+
+    console.log('MQTT service started')
   }
 
   /**
-   * Load MQTT configurations and subscribe to topics
+   * Load device configurations and subscribe to topics
    */
   private async loadAndSubscribe(): Promise<void> {
     try {
-      
-      this.topicToDeviceMap.clear();
+      this.topicToDeviceMap.clear()
 
-      
-      const mqttConfigs = await db.mQTTConfig.findMany({
+      const devices = await db.device.findMany({
         include: {
-          device: true,
-        },
-      });
+          deviceType: true
+        }
+      })
 
-      console.log(`Found ${mqttConfigs.length} MQTT configurations`);
+      console.log(`Found ${devices.length} devices to configure`)
 
-      
-      for (const config of mqttConfigs) {
-        if (config.listenTopics && config.listenTopics.length > 0) {
-          for (const topic of config.listenTopics) {
-            
-            const topicString = `${config.topicPrefix}/${topic}`;
-            this.topicToDeviceMap.set(topicString, config.deviceId);
-            
-            
-            await this.client.subscribe(topicString);
-            console.log(`Subscribed to topic: ${topicString} for device: ${config.device.name}.`);
-          }
+      for (const device of devices) {
+        const { baseTopic, id } = device
+
+        if (!baseTopic) {
+          console.warn(`Device ${id} has no base topic configured, skipping`)
+          continue
+        }
+
+        const topicSuffixes = device.deviceType.topicSuffixes || []
+
+        for (const suffix of topicSuffixes) {
+          const fullTopic = this.buildFullTopic(baseTopic, suffix)
+          this.topicToDeviceMap.set(fullTopic, {
+            deviceId: id,
+            topicSuffix: suffix
+          })
+
+          await this.client.subscribe(fullTopic)
+          console.log(
+            `Subscribed to topic: ${fullTopic} for device: ${device.name}`
+          )
         }
       }
     } catch (error) {
-      console.error('Error loading MQTT configurations:', error);
-      this.emit('error', error);
+      console.error('Error loading device configurations:', error)
+      this.emit('error', error)
     }
   }
 
@@ -173,10 +193,10 @@ export class MqttService extends EventEmitter {
    * Resubscribe to all topics (used after reconnection)
    */
   private async resubscribeToAllTopics(): Promise<void> {
-    const topics = Array.from(this.topicToDeviceMap.keys());
+    const topics = Array.from(this.topicToDeviceMap.keys())
     if (topics.length > 0) {
-      await this.client.subscribe(topics);
-      console.log(`Resubscribed to ${topics.length} topics`);
+      await this.client.subscribe(topics)
+      console.log(`Resubscribed to ${topics.length} topics`)
     }
   }
 
@@ -184,50 +204,76 @@ export class MqttService extends EventEmitter {
    * Periodically check device statuses based on recent telemetry
    */
   private async checkDeviceStatuses(): Promise<void> {
-    const timeThreshold = new Date();
-    timeThreshold.setMinutes(timeThreshold.getMinutes() - 5); 
+    const timeThreshold = new Date()
+    timeThreshold.setMinutes(timeThreshold.getMinutes() - 5)
 
     try {
-      
       const devices = await db.device.findMany({
         select: {
           id: true,
           status: true,
           telemetry: {
             orderBy: {
-              receivedAt: 'desc',
+              receivedAt: 'desc'
             },
-            take: 1,
+            take: 1
           }
         }
-      });
+      })
 
-      
       for (const device of devices) {
-        let newStatus: DeviceStatus = 'UNKNOWN';
-        
-        if (device.telemetry && device.telemetry.length > 0) {
-          const latestTelemetry = device.telemetry[0];
-          
-          if (latestTelemetry.receivedAt >= timeThreshold) {
-            newStatus = 'ONLINE';
-          } else {
-            newStatus = 'OFFLINE';
-          }
+        let newStatus: DeviceStatus = 'UNKNOWN'
+
+        const hasRecentTelemetry =
+          device.telemetry.length > 0 &&
+          device.telemetry[0].receivedAt >= timeThreshold
+
+        if (hasRecentTelemetry) {
+          newStatus = 'ONLINE'
+        } else if (device.telemetry.length > 0) {
+          newStatus = 'OFFLINE'
         }
 
-        
         if (device.status !== newStatus) {
           await db.device.update({
             where: { id: device.id },
-            data: { status: newStatus },
-          });
-          console.log(`Updated device ${device.id} status to ${newStatus}`);
+            data: { status: newStatus }
+          })
+          console.log(`Updated device ${device.id} status to ${newStatus}`)
         }
       }
     } catch (error) {
-      console.error('Error checking device statuses:', error);
-      this.emit('error', error);
+      console.error('Error checking device statuses:', error)
+      this.emit('error', error)
+    }
+  }
+
+  /**
+   * Publish a message to a device topic
+   */
+  public async publishToDeviceTopic(
+    deviceId: string,
+    topicSuffix: TopicSuffix,
+    message: any
+  ): Promise<void> {
+    try {
+      const device = await db.device.findUnique({
+        where: { id: deviceId }
+      })
+
+      if (!device || !device.baseTopic) {
+        throw new Error(`Device ${deviceId} not found or has no base topic`)
+      }
+
+      const fullTopic = this.buildFullTopic(device.baseTopic, topicSuffix)
+      const messageStr =
+        typeof message === 'string' ? message : JSON.stringify(message)
+
+      await this.client.publish(fullTopic, messageStr)
+      console.log(`Published message to ${fullTopic}`)
+    } catch (error) {
+      console.error('Error publishing message:', error)
+      throw error
     }
   }
 
@@ -236,11 +282,11 @@ export class MqttService extends EventEmitter {
    */
   public async stop(): Promise<void> {
     if (!this._isRunning) {
-      return;
+      return
     }
 
-    this._isRunning = false;
-    await this.client.disconnect();
-    console.log('MQTT service stopped');
+    this._isRunning = false
+    await this.client.disconnect()
+    console.log('MQTT service stopped')
   }
 }

@@ -329,7 +329,7 @@ export function useSuspenseCountDevice<TArgs extends Prisma.DeviceCountArgs, TQu
 }
 import type { DeviceStatus } from '@prisma/client';
 
-export function useCheckDevice<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string; description?: string; status?: DeviceStatus; deviceTypeId?: string; userId?: string; locationId?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
+export function useCheckDevice<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string; description?: string; status?: DeviceStatus; deviceTypeId?: string; userId?: string; locationId?: string; baseTopic?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
     const { endpoint, fetch } = getHooksContext();
     return useModelQuery<boolean, boolean, TError>('Device', `${endpoint}/device/check`, args, options, fetch);
 }

@@ -1,31 +1,45 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, TopicSuffix } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  const deviceTypes = ['Temperature Sensor', 'Humidity Sensor', 'Pressure Sensor', 'Flow Sensor']
+  const deviceTypes = [
+    {
+      name: 'Temperature Sensor',
+      topicSuffixes: [TopicSuffix.STATUS_TEMPERATURE]
+    },
+    {
+      name: 'Humidity Sensor',
+      topicSuffixes: [TopicSuffix.STATUS_HUMIDITY]
+    },
+    {
+      name: 'Temperature and Humidity Sensor',
+      topicSuffixes: [TopicSuffix.STATUS_TEMPERATURE, TopicSuffix.STATUS_HUMIDITY]
+    }
+  ]
+
   for (const deviceType of deviceTypes) {
     await prisma.deviceType.upsert({
       where: {
-        name: deviceType,
+        name: deviceType.name
       },
       update: {},
       create: {
-        name: deviceType,
-      },
+        ...deviceType
+      }
     })
   }
 
   await prisma.user.upsert({
     where: {
-      email: 'cgl@email.com',
+      email: 'cgl@email.com'
     },
     create: {
       email: 'cgl@email.com',
-      password: bcrypt.hashSync('password123'),
+      password: bcrypt.hashSync('password123')
     },
-    update: {},
+    update: {}
   })
 }
 
@@ -33,7 +47,7 @@ main()
   .then(async () => {
     await prisma.$disconnect()
   })
-  .catch(async (e) => {
+  .catch(async e => {
     console.error(e)
     await prisma.$disconnect()
     process.exit(1)

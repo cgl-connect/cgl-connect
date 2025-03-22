@@ -19,6 +19,7 @@ abstract model BaseModel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model User extends BaseModel {
   email    String   @unique
   password String   @password @omit
@@ -35,9 +36,25 @@ enum Role {
   USER
 }
 
+enum TopicSuffix {
+  // status
+  STATUS_ONOFF
+  STATUS_BRIGHTNESS
+  STATUS_COLOR
+  STATUS_TEMPERATURE
+  STATUS_HUMIDITY
+  
+  // commands
+  COMMAND_ONOFF
+  COMMAND_BRIGHTNESS
+  COMMAND_COLOR
+  COMMAND_TEMPERATURE
+}
+
 model DeviceType extends BaseModel {
-  name    String   @unique
-  devices Device[]
+  name          String        @unique
+  devices       Device[]
+  topicSuffixes TopicSuffix[]
 
   @@allow('all', true)
 }
@@ -60,19 +77,9 @@ model Device extends BaseModel {
   locationId   String?
   location     Location?    @relation(fields: [locationId], references: [id])
 
-  // mqtt
-  mqttConfig   MQTTConfig[]
+  baseTopic    String       @unique
   telemetry    Telemetry[]
   alerts       Alert[]
-
-  @@allow('all', true)
-}
-
-model MQTTConfig extends BaseModel {
-  deviceId     String
-  device       Device   @relation(fields: [deviceId], references: [id])
-  topicPrefix  String   @unique
-  listenTopics String[]
 
   @@allow('all', true)
 }
@@ -84,18 +91,20 @@ model Location extends BaseModel {
 }
 
 model Telemetry extends BaseModel {
-  deviceId   String
-  device     Device   @relation(fields: [deviceId], references: [id])
-  receivedAt DateTime @default(now())
-  data       Json
+  receivedAt  DateTime    @default(now())
+  data        Json
+  topicSuffix TopicSuffix
 
-  @@index([deviceId, receivedAt])
+  device      Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId    String
+
+  @@index([deviceId, topicSuffix, receivedAt])
   @@allow('all', true)
 }
 
 model Alert extends BaseModel {
   deviceId String
-  device   Device @relation(fields: [deviceId], references: [id])
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   severity String
   message  String
 }

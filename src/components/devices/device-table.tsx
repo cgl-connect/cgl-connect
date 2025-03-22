@@ -41,6 +41,7 @@ interface DeviceWithRelations {
   status: DeviceStatus;
   createdAt: Date;
   updatedAt: Date;
+  baseTopic: string;
   deviceType: { id: string; name: string };
   location?: { id: string; name: string } | null;
   user?: { id: string; name?: string | null } | null;
@@ -96,6 +97,7 @@ export default function DeviceTable({ devices, onRefresh }: DeviceTableProps) {
             <TableHead>Status</TableHead>
             <TableHead>Last Updated</TableHead>
             <TableHead>Owner</TableHead>
+            <TableHead>Base Topic</TableHead>
             <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -108,28 +110,31 @@ export default function DeviceTable({ devices, onRefresh }: DeviceTableProps) {
               <TableCell>{getStatusBadge(device.status)}</TableCell>
               <TableCell>{dayJs(device.updatedAt).fromNow()}</TableCell>
               <TableCell>{device.user?.name || "—"}</TableCell>
+              <TableCell className="font-mono text-xs">{device.baseTopic}</TableCell>
               <TableCell>
-                <DeviceActivityMenu deviceId={device.id} />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditingDevice(device)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => setDeviceToDelete(device.id)}
-                      className="text-red-600"
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex space-x-1">
+                  <DeviceActivityMenu deviceId={device.id} />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setEditingDevice(device)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setDeviceToDelete(device.id)}
+                        className="text-red-600"
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </TableCell>
             </TableRow>
           ))}

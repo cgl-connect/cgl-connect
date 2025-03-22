@@ -327,8 +327,9 @@ export function useSuspenseCountDeviceType<TArgs extends Prisma.DeviceTypeCountA
     const { endpoint, fetch } = getHooksContext();
     return useSuspenseModelQuery<TQueryFnData, TData, TError>('DeviceType', `${endpoint}/deviceType/count`, args, options, fetch);
 }
+import type { TopicSuffix } from '@prisma/client';
 
-export function useCheckDeviceType<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
+export function useCheckDeviceType<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string; topicSuffixes?: TopicSuffix }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
     const { endpoint, fetch } = getHooksContext();
     return useModelQuery<boolean, boolean, TError>('DeviceType', `${endpoint}/deviceType/check`, args, options, fetch);
 }

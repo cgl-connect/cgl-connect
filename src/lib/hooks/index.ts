@@ -8,7 +8,6 @@
 export * from './user';
 export * from './device-type';
 export * from './device';
-export * from './mqtt-config';
 export * from './location';
 export * from './telemetry';
 export * from './alert';

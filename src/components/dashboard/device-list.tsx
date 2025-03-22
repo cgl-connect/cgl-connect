@@ -1,126 +1,132 @@
-"use client";
+'use client'
 
-import { useState } from "react";
+import { useState } from 'react'
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { 
-  CheckCircle, 
-  AlertTriangle, 
+  TableRow
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import {
+  CheckCircle,
+  AlertTriangle,
   WifiOff,
   Search,
   Filter
-} from "lucide-react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import "dayjs/locale/pt-br";
+} from 'lucide-react'
+import { dayJs } from '@/utils/dayjs'
 
-dayjs.extend(relativeTime);
-dayjs.locale("pt-br");
-
-type DeviceStatus = "online" | "warning" | "offline";
+type DeviceStatus = 'ONLINE' | 'OFFLINE' | 'UNKNOWN'
 
 interface Device {
-  id: string;
-  name: string;
-  type: string;
-  location: string;
-  status: DeviceStatus;
-  lastActive: Date;
-  ipAddress: string;
+  id: string
+  name: string
+  type: string
+  location: string
+  status: DeviceStatus
+  lastActive: Date
+  baseTopic: string
 }
 
 const mockDevices: Device[] = [
   {
-    id: "dev-001",
-    name: "Projetor Principal",
-    type: "Projetor",
-    location: "Sala 101 - Bloco A",
-    status: "online",
+    id: 'dev-001',
+    name: 'Projetor Principal',
+    type: 'Projetor',
+    location: 'Sala 101 - Bloco A',
+    status: 'ONLINE',
     lastActive: new Date(),
-    ipAddress: "192.168.1.10",
+    baseTopic: 'devices/proj/sala101'
   },
   {
-    id: "dev-002",
-    name: "Ar-condicionado",
-    type: "HVAC",
-    location: "Sala 102 - Bloco A",
-    status: "warning",
+    id: 'dev-002',
+    name: 'Ar-condicionado',
+    type: 'HVAC',
+    location: 'Sala 102 - Bloco A',
+    status: 'OFFLINE',
     lastActive: new Date(Date.now() - 30 * 60 * 1000),
-    ipAddress: "192.168.1.11",
+    baseTopic: 'devices/hvac/sala102'
   },
   {
-    id: "dev-003",
-    name: "Sensor de Presença",
-    type: "Sensor",
-    location: "Sala 103 - Bloco A",
-    status: "online",
+    id: 'dev-003',
+    name: 'Sensor de Presença',
+    type: 'Sensor',
+    location: 'Sala 103 - Bloco A',
+    status: 'ONLINE',
     lastActive: new Date(Date.now() - 5 * 60 * 1000),
-    ipAddress: "192.168.1.12",
+    baseTopic: 'devices/sensor/sala103'
   },
   {
-    id: "dev-004",
-    name: "Smart Board",
-    type: "Display",
-    location: "Sala 201 - Bloco B",
-    status: "offline",
+    id: 'dev-004',
+    name: 'Smart Board',
+    type: 'Display',
+    location: 'Sala 201 - Bloco B',
+    status: 'UNKNOWN',
     lastActive: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    ipAddress: "192.168.1.13",
+    baseTopic: 'devices/display/sala201'
   },
   {
-    id: "dev-005",
-    name: "Câmera de Segurança",
-    type: "Câmera",
-    location: "Corredor - Bloco B",
-    status: "online",
+    id: 'dev-005',
+    name: 'Câmera de Segurança',
+    type: 'Câmera',
+    location: 'Corredor - Bloco B',
+    status: 'ONLINE',
     lastActive: new Date(Date.now() - 10 * 60 * 1000),
-    ipAddress: "192.168.1.14",
-  },
-];
+    baseTopic: 'devices/camera/corredor'
+  }
+]
 
 export default function DeviceList() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [devices, setDevices] = useState<Device[]>(mockDevices);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [devices, setDevices] = useState<Device[]>(mockDevices)
 
-  const filteredDevices = devices.filter((device) =>
-    device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    device.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    device.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDevices = devices.filter(
+    device =>
+      device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      device.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      device.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      device.baseTopic.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const getStatusBadge = (status: DeviceStatus) => {
     switch (status) {
-      case "online":
+      case 'ONLINE':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1"
+          >
             <CheckCircle className="h-3 w-3" />
             Online
           </Badge>
-        );
-      case "warning":
+        )
+      case 'OFFLINE':
         return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3" />
-            Alerta
-          </Badge>
-        );
-      case "offline":
-        return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1">
+          <Badge
+            variant="outline"
+            className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1"
+          >
             <WifiOff className="h-3 w-3" />
             Offline
           </Badge>
-        );
+        )
+      default:
+        return (
+          <Badge
+            variant="outline"
+            className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1"
+          >
+            <AlertTriangle className="h-3 w-3" />
+            Unknown
+          </Badge>
+        )
     }
-  };
+  }
 
   return (
     <div className="space-y-4">
@@ -132,7 +138,7 @@ export default function DeviceList() {
             placeholder="Buscar dispositivos..."
             className="pl-8"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
           />
         </div>
         <Button variant="outline" size="icon">
@@ -149,24 +155,29 @@ export default function DeviceList() {
               <TableHead>Localização</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Última Atividade</TableHead>
-              <TableHead>Endereço IP</TableHead>
+              <TableHead>MQTT Topic</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredDevices.length > 0 ? (
-              filteredDevices.map((device) => (
+              filteredDevices.map(device => (
                 <TableRow key={device.id}>
                   <TableCell className="font-medium">{device.name}</TableCell>
                   <TableCell>{device.type}</TableCell>
                   <TableCell>{device.location}</TableCell>
                   <TableCell>{getStatusBadge(device.status)}</TableCell>
-                  <TableCell>{dayjs(device.lastActive).fromNow()}</TableCell>
-                  <TableCell className="text-slate-500">{device.ipAddress}</TableCell>
+                  <TableCell>{dayJs(device.lastActive).fromNow()}</TableCell>
+                  <TableCell className="font-mono text-xs text-slate-500">
+                    {device.baseTopic}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-6 text-slate-500">
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-6 text-slate-500"
+                >
                   Nenhum dispositivo encontrado
                 </TableCell>
               </TableRow>
@@ -175,5 +186,5 @@ export default function DeviceList() {
         </Table>
       </div>
     </div>
-  );
+  )
 }

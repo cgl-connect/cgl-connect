@@ -80,6 +80,10 @@ const metadata = {
                     isDataModel: true,
                     isArray: true,
                     backLink: 'deviceType',
+                }, topicSuffixes: {
+                    name: "topicSuffixes",
+                    type: "TopicSuffix",
+                    isArray: true,
                 },
             }
             , uniqueConstraints: {
@@ -164,12 +168,9 @@ const metadata = {
                     backLink: 'devices',
                     isRelationOwner: true,
                     foreignKeyMapping: { "id": "locationId" },
-                }, mqttConfig: {
-                    name: "mqttConfig",
-                    type: "MQTTConfig",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'device',
+                }, baseTopic: {
+                    name: "baseTopic",
+                    type: "String",
                 }, telemetry: {
                     name: "telemetry",
                     type: "Telemetry",
@@ -188,54 +189,9 @@ const metadata = {
                 id: {
                     name: "id",
                     fields: ["id"]
-                },
-            }
-            ,
-        }
-        ,
-        mQTTConfig: {
-            name: 'MQTTConfig', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deviceId: {
-                    name: "deviceId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'device',
-                }, device: {
-                    name: "device",
-                    type: "Device",
-                    isDataModel: true,
-                    backLink: 'mqttConfig',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "deviceId" },
-                }, topicPrefix: {
-                    name: "topicPrefix",
-                    type: "String",
-                }, listenTopics: {
-                    name: "listenTopics",
-                    type: "String",
-                    isArray: true,
-                },
-            }
-            , uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                }, topicPrefix: {
-                    name: "topicPrefix",
-                    fields: ["topicPrefix"]
+                }, baseTopic: {
+                    name: "baseTopic",
+                    fields: ["baseTopic"]
                 },
             }
             ,
@@ -295,18 +251,6 @@ const metadata = {
                     name: "updatedAt",
                     type: "DateTime",
                     attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deviceId: {
-                    name: "deviceId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'device',
-                }, device: {
-                    name: "device",
-                    type: "Device",
-                    isDataModel: true,
-                    backLink: 'telemetry',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "deviceId" },
                 }, receivedAt: {
                     name: "receivedAt",
                     type: "DateTime",
@@ -314,6 +258,21 @@ const metadata = {
                 }, data: {
                     name: "data",
                     type: "Json",
+                }, topicSuffix: {
+                    name: "topicSuffix",
+                    type: "TopicSuffix",
+                }, device: {
+                    name: "device",
+                    type: "Device",
+                    isDataModel: true,
+                    backLink: 'telemetry',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "deviceId" },
+                }, deviceId: {
+                    name: "deviceId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'device',
                 },
             }
             , uniqueConstraints: {
@@ -372,6 +331,7 @@ const metadata = {
     }
     ,
     deleteCascade: {
+        device: ['Telemetry', 'Alert'],
     }
     ,
     authModel: 'User'

@@ -24,6 +24,15 @@ import DeviceForm from '@/components/devices/device-form'
 import LoadingSpinner from '@/components/loading-spinner'
 import { useFindUniqueDevice } from '@/lib/hooks'
 import DeviceActivityMenu from '@/components/devices/device-activity-menu'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '@/components/ui/accordion'
+import { topicSuffixToPath } from '@/lib/mqtt/topicMapping'
+import { TopicSuffix } from '@prisma/client'
+import { dayJs } from '@/utils/dayjs'
 
 export default function DeviceDetailPage() {
   const router = useRouter()
@@ -43,7 +52,7 @@ export default function DeviceDetailPage() {
       user: true,
       telemetry: {
         orderBy: {
-          createdAt: 'desc'
+          receivedAt: 'desc'
         },
         take: 10
       },
@@ -109,6 +118,23 @@ export default function DeviceDetailPage() {
     }
   }
 
+  const getFullTopicPath = (baseTopic: string, suffix: TopicSuffix) => {
+    const path = topicSuffixToPath[suffix]
+    return path ? `${baseTopic}/${path}` : baseTopic
+  }
+
+  // Group telemetry by topic suffix
+  const groupedTelemetry = device.telemetry.reduce(
+    (acc, item) => {
+      if (!acc[item.topicSuffix]) {
+        acc[item.topicSuffix] = []
+      }
+      acc[item.topicSuffix].push(item)
+      return acc
+    },
+    {} as Record<TopicSuffix, typeof device.telemetry>
+  )
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
@@ -170,15 +196,25 @@ export default function DeviceDetailPage() {
 
             <div>
               <div className="text-sm font-medium text-gray-500">
+                Base Topic
+              </div>
+              <div className="font-mono text-sm">{device.baseTopic}</div>
+            </div>
+
+            <div>
+              <div className="text-sm font-medium text-gray-500">
                 Last Updated
               </div>
-              formatar data aqui
-              <div>{new Date(device.updatedAt).toISOString()}</div>
+              <div>
+                {dayJs(device.updatedAt).format('MMM D, YYYY HH:mm:ss')}
+              </div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">Created</div>
-              <div>{new Date(device.createdAt).toISOString()}</div>
+              <div>
+                {dayJs(device.createdAt).format('MMM D, YYYY HH:mm:ss')}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -205,23 +241,57 @@ export default function DeviceDetailPage() {
               </TabsList>
 
               <TabsContent value="telemetry">
-                {device.telemetry.length === 0 ? (
+                {!device.deviceType.topicSuffixes ||
+                device.deviceType.topicSuffixes.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No topic suffixes configured for this device type
+                  </div>
+                ) : device.telemetry.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     No telemetry data available for this device
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {device.telemetry.map(item => (
-                      <div key={item.id} className="border p-4 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="text-sm text-gray-500">
-                            {new Date(item.createdAt).toISOString()}
-                          </div>
-                        </div>
-                        <pre className="bg-gray-50 p-3 rounded text-sm overflow-x-auto">
-                          {JSON.stringify(item.data, null, 2)}
-                        </pre>
-                      </div>
+                    {Object.entries(groupedTelemetry).map(([suffix, items]) => (
+                      <Card key={suffix} className="overflow-hidden">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg">
+                            Topic:{' '}
+                            {getFullTopicPath(
+                              device.baseTopic,
+                              suffix as TopicSuffix
+                            )}
+                          </CardTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                          <Accordion
+                            type="single"
+                            collapsible
+                            className="w-full"
+                          >
+                            {items.map((item, index) => (
+                              <AccordionItem key={item.id} value={item.id}>
+                                <AccordionTrigger className="py-3 hover:no-underline">
+                                  <div className="flex justify-between items-center w-full pr-4">
+                                    <span>Telemetry {index + 1}</span>
+                                    <span className="text-sm text-gray-500">
+                                      {dayJs(item.receivedAt).format(
+                                        'MMM D, YYYY HH:mm:ss'
+                                      )}
+                                    </span>
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <pre className="bg-gray-50 p-3 rounded text-sm overflow-x-auto">
+                                    {JSON.stringify(item.data, null, 2)}
+                                  </pre>
+                                </AccordionContent>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 )}
@@ -250,7 +320,9 @@ export default function DeviceDetailPage() {
                             {alert.severity} Alert
                           </div>
                           <div className="text-sm text-gray-500">
-                            {new Date(alert.createdAt).toISOString()}
+                            {dayJs(alert.createdAt).format(
+                              'MMM D, YYYY HH:mm:ss'
+                            )}
                           </div>
                         </div>
                         <div>{alert.message}</div>
@@ -262,6 +334,34 @@ export default function DeviceDetailPage() {
 
               <TabsContent value="settings">
                 <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">
+                      Available Topics
+                    </h3>
+                    {device.deviceType.topicSuffixes &&
+                    device.deviceType.topicSuffixes.length > 0 ? (
+                      <div className="space-y-2">
+                        {device.deviceType.topicSuffixes.map(suffix => (
+                          <div
+                            key={suffix}
+                            className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                          >
+                            <span className="font-medium">
+                              {suffix.replace('_', ' ').toLowerCase()}
+                            </span>
+                            <span className="font-mono text-xs">
+                              {getFullTopicPath(device.baseTopic, suffix)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-gray-500">
+                        No topics configured for this device type
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <h3 className="text-lg font-medium mb-2">
                       Device Management
@@ -301,7 +401,7 @@ export default function DeviceDetailPage() {
           setIsEditModalOpen(false)
           refetch()
         }}
-        deviceData={device}
+        deviceId={device.id}
       />
     </div>
   )

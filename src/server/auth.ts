@@ -105,3 +105,16 @@ function authorize(prisma: PrismaClient) {
  * @see https://next-auth.js.org/configuration/nextjs
  */
 export const getServerAuthSession = () => getServerSession(authOptions)
+
+export const getCurrentUser = async () => {
+  const session = await getServerAuthSession()
+  console.log('session', session);
+  const userId = session?.user?.id
+
+  if (!userId) return null
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  })
+  return user
+}

@@ -31,6 +31,7 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form'
+import { useToast } from '@/lib/hooks/toast'
 
 const formSchema = z.object({
   name: z.string().optional(),
@@ -60,6 +61,7 @@ export default function UserForm({
 }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isEditMode = !!userId
+  const toast = useToast()
 
   const { data: userData, isLoading: isLoadingUser } = useFindUniqueUser(
     { where: { id: userId } },
@@ -109,6 +111,7 @@ export default function UserForm({
           onError: error => {
             console.error('Error updating user:', error)
             setIsSubmitting(false)
+            toast.exception(error)
           },
         },
       )
@@ -143,6 +146,7 @@ export default function UserForm({
           onError: error => {
             console.error('Error creating user:', error)
             setIsSubmitting(false)
+            toast.exception(error)
           },
         },
       )

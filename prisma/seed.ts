@@ -7,39 +7,44 @@ async function main() {
   const deviceTypes = [
     {
       name: 'Temperature Sensor',
-      topicSuffixes: [TopicSuffix.STATUS_TEMPERATURE]
+      topicSuffixes: [TopicSuffix.STATUS_TEMPERATURE],
     },
     {
       name: 'Humidity Sensor',
-      topicSuffixes: [TopicSuffix.STATUS_HUMIDITY]
+      topicSuffixes: [TopicSuffix.STATUS_HUMIDITY],
     },
     {
       name: 'Temperature and Humidity Sensor',
-      topicSuffixes: [TopicSuffix.STATUS_TEMPERATURE, TopicSuffix.STATUS_HUMIDITY]
-    }
+      topicSuffixes: [
+        TopicSuffix.STATUS_TEMPERATURE,
+        TopicSuffix.STATUS_HUMIDITY,
+      ],
+    },
   ]
 
   for (const deviceType of deviceTypes) {
     await prisma.deviceType.upsert({
       where: {
-        name: deviceType.name
+        name: deviceType.name,
       },
       update: {},
       create: {
-        ...deviceType
-      }
+        ...deviceType,
+      },
     })
   }
 
   await prisma.user.upsert({
     where: {
-      email: 'cgl@email.com'
+      email: 'cgl@email.com',
     },
     create: {
+      name: 'CGL - test user',
       email: 'cgl@email.com',
-      password: bcrypt.hashSync('password123')
+      password: bcrypt.hashSync('password123'),
+      role: 'ADMIN',
     },
-    update: {}
+    update: {},
   })
 }
 

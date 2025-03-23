@@ -1,19 +1,5 @@
-import { Control, useFormContext } from 'react-hook-form'
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { DeviceType, Location, User } from '@prisma/client'
+import { FormSelect } from "@/components/ui/form-fields/form-select"
+import { DeviceType, User, Location } from "@prisma/client"
 
 interface DeviceRelationsSectionProps {
   deviceTypes: DeviceType[]
@@ -28,100 +14,46 @@ export function DeviceRelationsSection({
   users,
   onDeviceTypeChange
 }: DeviceRelationsSectionProps) {
-  const { control } = useFormContext()
+  const deviceTypeOptions = deviceTypes.map(type => ({
+    value: type.id,
+    label: type.name
+  }))
+  
+  const locationOptions = locations.map(location => ({
+    value: location.id,
+    label: location.name
+  }))
+  
+  const userOptions = users.map(user => ({
+    value: user.id,
+    label: user.name || user.email
+  }))
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <FormField
-        control={control}
+      <FormSelect
         name="deviceTypeId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Device Type</FormLabel>
-            <Select
-              onValueChange={value => {
-                field.onChange(value)
-                onDeviceTypeChange(value)
-              }}
-              defaultValue={field.value}
-              value={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select device type" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {deviceTypes.map(type => (
-                  <SelectItem key={type.id} value={type.id}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Device Type"
+        placeholder="Select device type"
+        options={deviceTypeOptions}
+        required
+        onValueChange={onDeviceTypeChange}
       />
 
-      <FormField
-        control={control}
+      <FormSelect
         name="locationId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Location</FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value || ''}
-              value={field.value || ''}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value={'none'}>None</SelectItem>
-                {locations.map(location => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Location"
+        placeholder="Select location"
+        options={locationOptions}
+        includeEmpty={true}
       />
 
-      <FormField
-        control={control}
+      <FormSelect
         name="userId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Assigned User</FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value || ''}
-              value={field.value || ''}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select user" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value={'none'}>None</SelectItem>
-                {users.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name || user.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Assigned User"
+        placeholder="Select user"
+        options={userOptions}
+        includeEmpty={true}
       />
     </div>
   )

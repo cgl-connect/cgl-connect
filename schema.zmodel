@@ -88,6 +88,8 @@ model Location extends BaseModel {
   name    String
   address String?
   devices Device[]
+
+  @@allow('all', true)
 }
 
 model Telemetry extends BaseModel {

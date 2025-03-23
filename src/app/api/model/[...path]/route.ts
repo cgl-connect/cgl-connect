@@ -5,6 +5,7 @@ import { NextRequestHandler } from "@zenstackhq/server/next";
 
 async function getPrisma() {
   const session = await getServerAuthSession();
+  console.log('session', session);
   return enhance(db, { user: session?.user as any});
 }
 

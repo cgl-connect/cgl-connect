@@ -42,6 +42,18 @@ const metadata = {
                     isDataModel: true,
                     isArray: true,
                     backLink: 'user',
+                }, ownedDashboards: {
+                    name: "ownedDashboards",
+                    type: "Dashboard",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'owner',
+                }, sharedDashboards: {
+                    name: "sharedDashboards",
+                    type: "Dashboard",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'sharedWith',
                 },
             }
             , uniqueConstraints: {
@@ -180,6 +192,12 @@ const metadata = {
                 }, alerts: {
                     name: "alerts",
                     type: "Alert",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'device',
+                }, dashboards: {
+                    name: "dashboards",
+                    type: "DashboardDevice",
                     isDataModel: true,
                     isArray: true,
                     backLink: 'device',
@@ -328,10 +346,149 @@ const metadata = {
             ,
         }
         ,
+        dashboard: {
+            name: 'Dashboard', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, name: {
+                    name: "name",
+                    type: "String",
+                }, description: {
+                    name: "description",
+                    type: "String",
+                    isOptional: true,
+                }, isPublic: {
+                    name: "isPublic",
+                    type: "Boolean",
+                    attributes: [{ "name": "@default", "args": [{ "value": false }] }],
+                }, owner: {
+                    name: "owner",
+                    type: "User",
+                    isDataModel: true,
+                    backLink: 'ownedDashboards',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "ownerId" },
+                }, ownerId: {
+                    name: "ownerId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'owner',
+                }, sharedWith: {
+                    name: "sharedWith",
+                    type: "User",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'sharedDashboards',
+                }, devices: {
+                    name: "devices",
+                    type: "DashboardDevice",
+                    isDataModel: true,
+                    isArray: true,
+                    backLink: 'dashboard',
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
+                },
+            }
+            ,
+        }
+        ,
+        dashboardDevice: {
+            name: 'DashboardDevice', fields: {
+                id: {
+                    name: "id",
+                    type: "String",
+                    isId: true,
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, createdAt: {
+                    name: "createdAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@default", "args": [] }],
+                }, updatedAt: {
+                    name: "updatedAt",
+                    type: "DateTime",
+                    attributes: [{ "name": "@updatedAt", "args": [] }],
+                }, dashboard: {
+                    name: "dashboard",
+                    type: "Dashboard",
+                    isDataModel: true,
+                    backLink: 'devices',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "dashboardId" },
+                }, dashboardId: {
+                    name: "dashboardId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'dashboard',
+                }, device: {
+                    name: "device",
+                    type: "Device",
+                    isDataModel: true,
+                    backLink: 'dashboards',
+                    isRelationOwner: true,
+                    foreignKeyMapping: { "id": "deviceId" },
+                }, deviceId: {
+                    name: "deviceId",
+                    type: "String",
+                    isForeignKey: true,
+                    relationField: 'device',
+                }, layout: {
+                    name: "layout",
+                    type: "DashboardDeviceLayout",
+                    isTypeDef: true,
+                },
+            }
+            , uniqueConstraints: {
+                id: {
+                    name: "id",
+                    fields: ["id"]
+                }, dashboardId_deviceId: {
+                    name: "dashboardId_deviceId",
+                    fields: ["dashboardId", "deviceId"]
+                },
+            }
+            ,
+        }
+        ,
+    }
+    ,
+    typeDefs: {
+        dashboardDeviceLayout: {
+            name: 'DashboardDeviceLayout', fields: {
+                width: {
+                    name: "width",
+                    type: "WidgetSize",
+                }, height: {
+                    name: "height",
+                    type: "WidgetSize",
+                }, order: {
+                    name: "order",
+                    type: "Int",
+                    attributes: [{ "name": "@default", "args": [{ "value": 0 }] }],
+                },
+            }
+            ,
+        }
+        ,
     }
     ,
     deleteCascade: {
-        device: ['Telemetry', 'Alert'],
+        device: ['Telemetry', 'Alert', 'DashboardDevice'],
+        dashboard: ['DashboardDevice'],
     }
     ,
     authModel: 'User'

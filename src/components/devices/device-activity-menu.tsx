@@ -21,7 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { ActivityIcon, RefreshCw } from 'lucide-react'
 import LoadingSpinner from '@/components/loading-spinner'
-import { useFindUniqueDevice } from '@/lib/hooks'
+import { useFindUniqueDevice } from '@/lib/zenstack-hooks'
 import { DeviceStatus, TopicSuffix } from '@prisma/client'
 import { dayJs } from '@/utils/dayjs'
 import { topicSuffixToPath } from '@/lib/mqtt/topicMapping'

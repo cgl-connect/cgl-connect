@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import DeviceForm from '@/components/devices/device-form'
 import LoadingSpinner from '@/components/loading-spinner'
-import { useFindUniqueDevice } from '@/lib/hooks'
+import { useFindUniqueDevice } from '@/lib/zenstack-hooks'
 import DeviceActivityMenu from '@/components/devices/device-activity-menu'
 import {
   Accordion,

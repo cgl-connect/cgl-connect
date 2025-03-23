@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DeviceTable from "@/components/devices/device-table";
 import DeviceForm from "@/components/devices/device-form";
 import LoadingSpinner from "@/components/loading-spinner";
-import { useFindManyDevice } from "@/lib/hooks";
+import { useFindManyDevice } from "@/lib/zenstack-hooks";
 
 export default function DevicesPage() {
   const router = useRouter();

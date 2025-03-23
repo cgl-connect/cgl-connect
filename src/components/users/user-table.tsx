@@ -28,7 +28,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Edit, MoreVertical, Trash } from 'lucide-react'
 import { useState } from 'react'
-import { useDeleteUser } from '@/lib/hooks'
+import { useDeleteUser } from '@/lib/zenstack-hooks'
 import { dayJs } from '@/utils/dayjs'
 import { Role } from '@prisma/client'
 

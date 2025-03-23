@@ -20,7 +20,7 @@ import {
   useCreateDeviceType,
   useFindUniqueDeviceType,
   useUpdateDeviceType,
-} from '@/lib/hooks'
+} from '@/lib/zenstack-hooks'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { extractTopicSuffix, topicSuffixToPath } from '@/lib/mqtt/topicMapping'

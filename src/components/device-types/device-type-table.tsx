@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge'
 import { Edit, MoreVertical, Trash } from 'lucide-react'
 import { TopicSuffix } from '@prisma/client'
 import { useState } from 'react'
-import { useDeleteDeviceType } from '@/lib/hooks'
+import { useDeleteDeviceType } from '@/lib/zenstack-hooks'
 import { dayJs } from '@/utils/dayjs'
 import { topicSuffixToPath } from '@/lib/mqtt/topicMapping'
 

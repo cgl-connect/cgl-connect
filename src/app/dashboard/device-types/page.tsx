@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, PlusCircle, RefreshCw } from 'lucide-react'
-import { useFindManyDeviceType } from '@/lib/hooks'
+import { useFindManyDeviceType } from '@/lib/zenstack-hooks'
 import DeviceTypeTable from '@/components/device-types/device-type-table'
 import DeviceTypeForm from '@/components/device-types/device-type-form'
 import LoadingSpinner from '@/components/loading-spinner'

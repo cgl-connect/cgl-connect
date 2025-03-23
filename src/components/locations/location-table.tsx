@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Edit, MoreVertical, Trash } from 'lucide-react'
 import { useState } from 'react'
-import { useDeleteLocation } from '@/lib/hooks'
+import { useDeleteLocation } from '@/lib/zenstack-hooks'
 import { dayJs } from '@/utils/dayjs'
 
 interface LocationWithRelations {

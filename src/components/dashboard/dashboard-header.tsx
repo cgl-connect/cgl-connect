@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { useFindUniqueUser } from '@/lib/hooks'
+import { useFindUniqueUser } from '@/lib/zenstack-hooks'
 import { useModelQuery } from '@zenstackhq/tanstack-query/runtime-v5/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 

@@ -5,7 +5,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type { Prisma, DeviceType } from "@prisma/client";
+import type { Prisma, DeviceType } from "@zenstackhq/runtime/models";
 import type { UseMutationOptions, UseQueryOptions, UseInfiniteQueryOptions, InfiniteData } from '@tanstack/react-query';
 import { getHooksContext } from '@zenstackhq/tanstack-query/runtime-v5/react';
 import { useModelQuery, useInfiniteModelQuery, useModelMutation } from '@zenstackhq/tanstack-query/runtime-v5/react';
@@ -327,7 +327,7 @@ export function useSuspenseCountDeviceType<TArgs extends Prisma.DeviceTypeCountA
     const { endpoint, fetch } = getHooksContext();
     return useSuspenseModelQuery<TQueryFnData, TData, TError>('DeviceType', `${endpoint}/deviceType/count`, args, options, fetch);
 }
-import type { TopicSuffix } from '@prisma/client';
+import type { TopicSuffix } from '@zenstackhq/runtime/models';
 
 export function useCheckDeviceType<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string; topicSuffixes?: TopicSuffix }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
     const { endpoint, fetch } = getHooksContext();

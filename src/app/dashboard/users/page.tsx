@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, RefreshCw } from 'lucide-react'
-import { useFindManyUser } from '@/lib/hooks'
+import { useFindManyUser } from '@/lib/zenstack-hooks'
 import UserTable from '@/components/users/user-table'
 import UserForm from '@/components/users/user-form'
 import LoadingSpinner from '@/components/loading-spinner'

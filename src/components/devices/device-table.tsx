@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, MoreVertical, Trash } from "lucide-react";
 import { DeviceStatus } from "@prisma/client";
 import DeviceForm from "./device-form";
-import { useDeleteDevice } from "@/lib/hooks/device";
+import { useDeleteDevice } from "@/lib/zenstack-hooks/device";
 import { dayJs } from "@/utils/dayjs";
 import DeviceActivityMenu from "./device-activity-menu";
 

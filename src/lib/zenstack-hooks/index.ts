@@ -11,6 +11,8 @@ export * from './device';
 export * from './location';
 export * from './telemetry';
 export * from './alert';
+export * from './dashboard';
+export * from './dashboard-device';
 export { getQueryKey } from '@zenstackhq/tanstack-query/runtime-v5';
 export { Provider } from '@zenstackhq/tanstack-query/runtime-v5/react';
 export { default as metadata } from './__model_meta';

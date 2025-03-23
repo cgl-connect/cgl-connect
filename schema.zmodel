@@ -6,7 +6,7 @@ plugin hooks {
   provider = '@zenstackhq/tanstack-query'
   target = 'react'
   version = 'v5'
-  output = "./src/lib/hooks"
+  output = "./src/lib/zenstack-hooks"
 }
 
 datasource db {
@@ -26,6 +26,9 @@ model User extends BaseModel {
   name     String?
   role     Role     @default(USER)
   devices  Device[]
+  
+  ownedDashboards  Dashboard[] @relation("OwnedDashboards")
+  sharedDashboards Dashboard[] @relation("SharedDashboards")
 
   @@allow('create,read', true)
   @@allow('update,delete', auth().role == 'ADMIN')
@@ -37,14 +40,11 @@ enum Role {
 }
 
 enum TopicSuffix {
-  // status
   STATUS_ONOFF
   STATUS_BRIGHTNESS
   STATUS_COLOR
   STATUS_TEMPERATURE
   STATUS_HUMIDITY
-  
-  // commands
   COMMAND_ONOFF
   COMMAND_BRIGHTNESS
   COMMAND_COLOR
@@ -80,6 +80,8 @@ model Device extends BaseModel {
   baseTopic    String       @unique
   telemetry    Telemetry[]
   alerts       Alert[]
+  
+  dashboards   DashboardDevice[]
 
   @@allow('all', true)
 }
@@ -109,4 +111,45 @@ model Alert extends BaseModel {
   device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   severity String
   message  String
+}
+
+enum WidgetSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+type DashboardDeviceLayout {
+  width WidgetSize
+  height WidgetSize
+  order Int @default(0)
+}
+
+model Dashboard extends BaseModel {
+  name        String
+  description String?
+  isPublic    Boolean      @default(false)
+  
+  owner       User         @relation(fields: [ownerId], references: [id], name: "OwnedDashboards")
+  ownerId     String
+  
+  sharedWith  User[]       @relation(name: "SharedDashboards")
+  
+  devices     DashboardDevice[]
+
+  @@allow('create', auth() != null)
+  @@allow('read', isPublic == true || owner == auth() || sharedWith?[auth()])
+  @@allow('update,delete', owner == auth())
+}
+
+model DashboardDevice extends BaseModel {
+  dashboard     Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  dashboardId   String
+  device        Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId      String
+  
+  layout        DashboardDeviceLayout @json
+  
+  @@unique([dashboardId, deviceId])
+  @@allow('all', dashboard.owner == auth() || dashboard.sharedWith?[auth()])
 }

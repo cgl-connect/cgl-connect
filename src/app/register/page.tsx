@@ -7,7 +7,7 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
-import { useCreateUser } from "@/lib/hooks/user";
+import { useCreateUser } from "@/lib/zenstack-hooks/user";
 import { formatLoginApiError } from "@/lib/formaters/format-login-api-error.formater";
 
 const signupFormSchema = z.object({

@@ -2,7 +2,14 @@
 
 import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
 import { Thermometer } from 'lucide-react'
 import { dayJs } from '@/utils/dayjs'
 
@@ -15,20 +22,25 @@ interface TemperatureWidgetProps {
   size: 'SMALL' | 'MEDIUM' | 'LARGE'
 }
 
-export default function TemperatureWidget({ data, size }: TemperatureWidgetProps) {
+export default function TemperatureWidget({
+  data,
+  size,
+}: TemperatureWidgetProps) {
   const latestTemp = useMemo(() => {
     if (!data || data.length === 0) return null
-    
+
     const latest = data[0]
-    return latest.data.temperature || latest.data.value || '--'
+    return latest.data || '--'
   }, [data])
 
   const chartData = useMemo(() => {
-    return data.map(item => ({
-      time: dayJs(item.receivedAt).format('HH:mm'),
-      value: parseFloat(item.data.temperature || item.data.value || 0),
-      date: dayJs(item.receivedAt).toDate(),
-    })).reverse()
+    return data
+      .map(item => ({
+        time: dayJs(item.receivedAt).format('HH:mm'),
+        value: parseFloat(item.data || 0),
+        date: dayJs(item.receivedAt).toDate(),
+      }))
+      .reverse()
   }, [data])
 
   if (size === 'SMALL') {
@@ -59,23 +71,20 @@ export default function TemperatureWidget({ data, size }: TemperatureWidgetProps
               {data.length > 0 && dayJs(data[0].receivedAt).fromNow()}
             </span>
           </div>
-          
+
           {chartData.length > 1 && (
             <div className="h-32">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="time" 
+                  <XAxis
+                    dataKey="time"
                     tick={{ fontSize: 10 }}
                     interval="preserveStartEnd"
                   />
-                  <YAxis
-                    domain={['auto', 'auto']}
-                    tick={{ fontSize: 10 }}
-                  />
+                  <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10 }} />
                   <Tooltip
-                    labelFormatter={(label) => `Time: ${label}`}
-                    formatter={(value) => [`${value}°C`, 'Temperature']}
+                    labelFormatter={label => `Time: ${label}`}
+                    formatter={value => [`${value}°C`, 'Temperature']}
                   />
                   <Line
                     type="monotone"

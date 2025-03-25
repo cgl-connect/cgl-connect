@@ -20,13 +20,13 @@ export default function HumidityWidget({ data, size }: HumidityWidgetProps) {
     if (!data || data.length === 0) return null
     
     const latest = data[0]
-    return latest.data.humidity || latest.data.value || '--'
+    return latest.data || '--'
   }, [data])
 
   const chartData = useMemo(() => {
     return data.map(item => ({
       time: dayJs(item.receivedAt).format('HH:mm'),
-      value: parseFloat(item.data.humidity || item.data.value || 0),
+      value: parseFloat(item.data|| 0),
       date: dayJs(item.receivedAt).toDate(),
     })).reverse()
   }, [data])

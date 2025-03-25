@@ -1,11 +1,12 @@
-import { getServerAuthSession } from "@/server/auth";
+import { getCurrentUser, getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/db";
 import { enhance } from "@zenstackhq/runtime";
 import { NextRequestHandler } from "@zenstackhq/server/next";
 
 async function getPrisma() {
-  const session = await getServerAuthSession();
-  return enhance(db, { user: session?.user as any});
+  const user = await getCurrentUser()
+  console.log('user', user);
+  return enhance(db, { user: user ?? undefined });
 }
 
 const handler = NextRequestHandler({ getPrisma, useAppDir: true });

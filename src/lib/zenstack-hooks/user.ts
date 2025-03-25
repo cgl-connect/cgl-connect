@@ -5,7 +5,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type { Prisma, User } from "@prisma/client";
+import type { Prisma, User } from "@zenstackhq/runtime/models";
 import type { UseMutationOptions, UseQueryOptions, UseInfiniteQueryOptions, InfiniteData } from '@tanstack/react-query';
 import { getHooksContext } from '@zenstackhq/tanstack-query/runtime-v5/react';
 import { useModelQuery, useInfiniteModelQuery, useModelMutation } from '@zenstackhq/tanstack-query/runtime-v5/react';
@@ -327,7 +327,7 @@ export function useSuspenseCountUser<TArgs extends Prisma.UserCountArgs, TQueryF
     const { endpoint, fetch } = getHooksContext();
     return useSuspenseModelQuery<TQueryFnData, TData, TError>('User', `${endpoint}/user/count`, args, options, fetch);
 }
-import type { Role } from '@prisma/client';
+import type { Role } from '@zenstackhq/runtime/models';
 
 export function useCheckUser<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; email?: string; password?: string; name?: string; role?: Role }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
     const { endpoint, fetch } = getHooksContext();

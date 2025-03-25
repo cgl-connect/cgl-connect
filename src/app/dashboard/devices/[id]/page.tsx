@@ -1,39 +1,49 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+  CardTitle
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import {
   ChevronLeft,
   Edit,
   AlertTriangle,
   Activity,
-  Settings,
-} from "lucide-react";
-import DeviceForm from "@/components/devices/device-form";
-import LoadingSpinner from "@/components/loading-spinner";
-import { useFindUniqueDevice } from "@/lib/hooks";
+  Settings
+} from 'lucide-react'
+import DeviceForm from '@/components/devices/device-form'
+import LoadingSpinner from '@/components/loading-spinner'
+import { useFindUniqueDevice } from '@/lib/zenstack-hooks'
+import DeviceActivityMenu from '@/components/devices/device-activity-menu'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '@/components/ui/accordion'
+import { topicSuffixToPath } from '@/lib/mqtt/topicMapping'
+import { TopicSuffix } from '@prisma/client'
+import { dayJs } from '@/utils/dayjs'
 
 export default function DeviceDetailPage() {
-  const router = useRouter();
-  const params = useParams();
-  const deviceId = params.id as string;
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const router = useRouter()
+  const params = useParams()
+  const deviceId = params.id as string
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const {
     data: device,
     isLoading,
-    refetch,
+    refetch
   } = useFindUniqueDevice({
     where: { id: deviceId },
     include: {
@@ -42,25 +52,25 @@ export default function DeviceDetailPage() {
       user: true,
       telemetry: {
         orderBy: {
-          createdAt: "desc",
+          receivedAt: 'desc'
         },
-        take: 10,
+        take: 10
       },
       alerts: {
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc'
         },
-        take: 5,
-      },
-    },
-  });
+        take: 5
+      }
+    }
+  })
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner size="lg" />
       </div>
-    );
+    )
   }
 
   if (!device) {
@@ -69,7 +79,7 @@ export default function DeviceDetailPage() {
         <div className="flex items-center mb-6">
           <Button
             variant="ghost"
-            onClick={() => router.push("/dashboard/devices")}
+            onClick={() => router.push('/dashboard/devices')}
             className="mr-4"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
@@ -84,29 +94,46 @@ export default function DeviceDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button onClick={() => router.push("/dashboard/devices")}>
+            <Button onClick={() => router.push('/dashboard/devices')}>
               Return to Device List
             </Button>
           </CardFooter>
         </Card>
       </div>
-    );
+    )
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "ONLINE":
-        return <Badge className="bg-green-500">Online</Badge>;
-      case "OFFLINE":
+      case 'ONLINE':
+        return <Badge className="bg-green-500">Online</Badge>
+      case 'OFFLINE':
         return (
           <Badge variant="secondary" className="bg-gray-500">
             Offline
           </Badge>
-        );
+        )
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">Unknown</Badge>
     }
-  };
+  }
+
+  const getFullTopicPath = (baseTopic: string, suffix: TopicSuffix) => {
+    const path = topicSuffixToPath[suffix]
+    return path ? `${baseTopic}/${path}` : baseTopic
+  }
+
+  // Group telemetry by topic suffix
+  const groupedTelemetry = device.telemetry.reduce(
+    (acc, item) => {
+      if (!acc[item.topicSuffix]) {
+        acc[item.topicSuffix] = []
+      }
+      acc[item.topicSuffix].push(item)
+      return acc
+    },
+    {} as Record<TopicSuffix, typeof device.telemetry>
+  )
 
   return (
     <div className="container mx-auto py-6">
@@ -114,7 +141,7 @@ export default function DeviceDetailPage() {
         <div className="flex items-center">
           <Button
             variant="ghost"
-            onClick={() => router.push("/dashboard/devices")}
+            onClick={() => router.push('/dashboard/devices')}
             className="mr-4"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
@@ -123,13 +150,16 @@ export default function DeviceDetailPage() {
           <h1 className="text-2xl font-bold">{device.name}</h1>
           <div className="ml-3">{getStatusBadge(device.status)}</div>
         </div>
-        <Button
-          onClick={() => setIsEditModalOpen(true)}
-          className="flex items-center gap-1"
-        >
-          <Edit className="h-4 w-4" />
-          Edit Device
-        </Button>
+        <div className="flex items-center gap-2">
+          <DeviceActivityMenu deviceId={device.id} />
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-1"
+          >
+            <Edit className="h-4 w-4" />
+            Edit Device
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -149,32 +179,42 @@ export default function DeviceDetailPage() {
               <div className="text-sm font-medium text-gray-500">
                 Description
               </div>
-              <div>{device.description || "No description provided"}</div>
+              <div>{device.description || 'No description provided'}</div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">Location</div>
-              <div>{device.location?.name || "No location assigned"}</div>
+              <div>{device.location?.name || 'No location assigned'}</div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">
                 Assigned User
               </div>
-              <div>{device.user?.name || "No user assigned"}</div>
+              <div>{device.user?.name || 'No user assigned'}</div>
+            </div>
+
+            <div>
+              <div className="text-sm font-medium text-gray-500">
+                Base Topic
+              </div>
+              <div className="font-mono text-sm">{device.baseTopic}</div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">
                 Last Updated
               </div>
-              formatar data aqui
-              <div>{new Date(device.updatedAt).toISOString()}</div>
+              <div>
+                {dayJs(device.updatedAt).format('MMM D, YYYY HH:mm:ss')}
+              </div>
             </div>
 
             <div>
               <div className="text-sm font-medium text-gray-500">Created</div>
-              <div>{new Date(device.createdAt).toISOString()}</div>
+              <div>
+                {dayJs(device.createdAt).format('MMM D, YYYY HH:mm:ss')}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -201,23 +241,57 @@ export default function DeviceDetailPage() {
               </TabsList>
 
               <TabsContent value="telemetry">
-                {device.telemetry.length === 0 ? (
+                {!device.deviceType.topicSuffixes ||
+                device.deviceType.topicSuffixes.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No topic suffixes configured for this device type
+                  </div>
+                ) : device.telemetry.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     No telemetry data available for this device
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {device.telemetry.map((item) => (
-                      <div key={item.id} className="border p-4 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="text-sm text-gray-500">
-                            {new Date(item.createdAt).toISOString()}
-                          </div>
-                        </div>
-                        <pre className="bg-gray-50 p-3 rounded text-sm overflow-x-auto">
-                          {JSON.stringify(item.data, null, 2)}
-                        </pre>
-                      </div>
+                    {Object.entries(groupedTelemetry).map(([suffix, items]) => (
+                      <Card key={suffix} className="overflow-hidden">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg">
+                            Topic:{' '}
+                            {getFullTopicPath(
+                              device.baseTopic,
+                              suffix as TopicSuffix
+                            )}
+                          </CardTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                          <Accordion
+                            type="single"
+                            collapsible
+                            className="w-full"
+                          >
+                            {items.map((item, index) => (
+                              <AccordionItem key={item.id} value={item.id}>
+                                <AccordionTrigger className="py-3 hover:no-underline">
+                                  <div className="flex justify-between items-center w-full pr-4">
+                                    <span>Telemetry {index + 1}</span>
+                                    <span className="text-sm text-gray-500">
+                                      {dayJs(item.receivedAt).format(
+                                        'MMM D, YYYY HH:mm:ss'
+                                      )}
+                                    </span>
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <pre className="bg-gray-50 p-3 rounded text-sm overflow-x-auto">
+                                    {JSON.stringify(item.data, null, 2)}
+                                  </pre>
+                                </AccordionContent>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 )}
@@ -230,15 +304,15 @@ export default function DeviceDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {device.alerts.map((alert) => (
+                    {device.alerts.map(alert => (
                       <div
                         key={alert.id}
                         className={`border p-4 rounded-lg ${
-                          alert.severity === "HIGH"
-                            ? "border-red-300 bg-red-50"
-                            : alert.severity === "MEDIUM"
-                            ? "border-yellow-300 bg-yellow-50"
-                            : "border-blue-300 bg-blue-50"
+                          alert.severity === 'HIGH'
+                            ? 'border-red-300 bg-red-50'
+                            : alert.severity === 'MEDIUM'
+                              ? 'border-yellow-300 bg-yellow-50'
+                              : 'border-blue-300 bg-blue-50'
                         }`}
                       >
                         <div className="flex justify-between items-center mb-2">
@@ -246,7 +320,9 @@ export default function DeviceDetailPage() {
                             {alert.severity} Alert
                           </div>
                           <div className="text-sm text-gray-500">
-                            {new Date(alert.createdAt).toISOString()}
+                            {dayJs(alert.createdAt).format(
+                              'MMM D, YYYY HH:mm:ss'
+                            )}
                           </div>
                         </div>
                         <div>{alert.message}</div>
@@ -258,6 +334,34 @@ export default function DeviceDetailPage() {
 
               <TabsContent value="settings">
                 <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">
+                      Available Topics
+                    </h3>
+                    {device.deviceType.topicSuffixes &&
+                    device.deviceType.topicSuffixes.length > 0 ? (
+                      <div className="space-y-2">
+                        {device.deviceType.topicSuffixes.map(suffix => (
+                          <div
+                            key={suffix}
+                            className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                          >
+                            <span className="font-medium">
+                              {suffix.replace('_', ' ').toLowerCase()}
+                            </span>
+                            <span className="font-mono text-xs">
+                              {getFullTopicPath(device.baseTopic, suffix)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-gray-500">
+                        No topics configured for this device type
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <h3 className="text-lg font-medium mb-2">
                       Device Management
@@ -294,11 +398,11 @@ export default function DeviceDetailPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={() => {
-          setIsEditModalOpen(false);
-          refetch();
+          setIsEditModalOpen(false)
+          refetch()
         }}
-        deviceData={device}
+        deviceId={device.id}
       />
     </div>
-  );
+  )
 }

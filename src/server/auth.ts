@@ -1,13 +1,15 @@
-import type { PrismaClient } from "@prisma/client";
-import { compare } from "bcryptjs";
+import type { PrismaClient } from '@prisma/client'
+import { compare } from 'bcryptjs'
 import {
   getServerSession,
   type DefaultSession,
   type NextAuthOptions,
-} from "next-auth";
-import { type Adapter } from "next-auth/adapters";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { db } from "./db";
+} from 'next-auth'
+import { type Adapter } from 'next-auth/adapters'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import { db } from './db'
+import Providers from 'next-auth/providers'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -15,11 +17,12 @@ import { db } from "./db";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
-      id: string;
-    } & DefaultSession["user"];
+      id: string
+      role: string
+    } & DefaultSession['user']
   }
 }
 
@@ -30,27 +33,27 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
   },
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: '/login',
+    error: '/login',
   },
   callbacks: {
     session({ session, token }) {
       if (session.user) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        session.user.id = token.sub!;
+        session.user.id = token.sub!
       }
-      return session;
+      return session
     },
   },
-  //adapter: PrismaAdapter(db) as Adapter,
+  adapter: PrismaAdapter(db) as Adapter,
   providers: [
     CredentialsProvider({
       credentials: {
-        email: { type: "email" },
-        password: { type: "password" },
+        email: { type: 'email' },
+        password: { type: 'password' },
       },
       authorize: authorize(db),
     }),
@@ -64,31 +67,36 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
-};
+}
 
 function authorize(prisma: PrismaClient) {
   return async (
-    credentials: Record<"email" | "password", string> | undefined
+    credentials: Record<'email' | 'password', string> | undefined,
   ) => {
-    if (!credentials) throw new Error("Missing credentials");
+    if (!credentials) throw new Error('Missing credentials')
+
     if (!credentials.email)
-      throw new Error('"email" is required in credentials');
+      throw new Error('"email" is required in credentials')
+
     if (!credentials.password)
-      throw new Error('"password" is required in credentials');
+      throw new Error('"password" is required in credentials')
+
     const maybeUser = await prisma.user.findFirst({
       where: { email: credentials.email },
-      select: { id: true, email: true, password: true, name: true },
-    });
-    if (!maybeUser?.password) return null;
-    // verify the input password with stored hash
-    const isValid = await compare(credentials.password, maybeUser.password);
-    if (!isValid) return null;
+      select: { id: true, email: true, password: true, name: true, role: true },
+    })
+
+    if (!maybeUser?.password) return null
+
+    const isValid = await compare(credentials.password, maybeUser.password)
+    if (!isValid) return null
     return {
       id: maybeUser.id,
       email: maybeUser.email,
       name: maybeUser.name,
-    };
-  };
+      role: maybeUser.role,
+    }
+  }
 }
 
 /**
@@ -96,4 +104,17 @@ function authorize(prisma: PrismaClient) {
  *
  * @see https://next-auth.js.org/configuration/nextjs
  */
-export const getServerAuthSession = () => getServerSession(authOptions);
+export const getServerAuthSession = () => getServerSession(authOptions)
+
+export const getCurrentUser = async () => {
+  const session = await getServerAuthSession()
+  console.log('session', session);
+  const userId = session?.user?.id
+
+  if (!userId) return null
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  })
+  return user
+}

@@ -5,7 +5,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type { Prisma, Telemetry } from "@prisma/client";
+import type { Prisma, Telemetry } from "@zenstackhq/runtime/models";
 import type { UseMutationOptions, UseQueryOptions, UseInfiniteQueryOptions, InfiniteData } from '@tanstack/react-query';
 import { getHooksContext } from '@zenstackhq/tanstack-query/runtime-v5/react';
 import { useModelQuery, useInfiniteModelQuery, useModelMutation } from '@zenstackhq/tanstack-query/runtime-v5/react';
@@ -327,8 +327,9 @@ export function useSuspenseCountTelemetry<TArgs extends Prisma.TelemetryCountArg
     const { endpoint, fetch } = getHooksContext();
     return useSuspenseModelQuery<TQueryFnData, TData, TError>('Telemetry', `${endpoint}/telemetry/count`, args, options, fetch);
 }
+import type { TopicSuffix } from '@zenstackhq/runtime/models';
 
-export function useCheckTelemetry<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; deviceId?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
+export function useCheckTelemetry<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; topicSuffix?: TopicSuffix; deviceId?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
     const { endpoint, fetch } = getHooksContext();
     return useModelQuery<boolean, boolean, TError>('Telemetry', `${endpoint}/telemetry/check`, args, options, fetch);
 }

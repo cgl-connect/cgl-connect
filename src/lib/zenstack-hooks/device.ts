@@ -5,7 +5,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type { Prisma, Device } from "@prisma/client";
+import type { Prisma, Device } from "@zenstackhq/runtime/models";
 import type { UseMutationOptions, UseQueryOptions, UseInfiniteQueryOptions, InfiniteData } from '@tanstack/react-query';
 import { getHooksContext } from '@zenstackhq/tanstack-query/runtime-v5/react';
 import { useModelQuery, useInfiniteModelQuery, useModelMutation } from '@zenstackhq/tanstack-query/runtime-v5/react';
@@ -327,9 +327,9 @@ export function useSuspenseCountDevice<TArgs extends Prisma.DeviceCountArgs, TQu
     const { endpoint, fetch } = getHooksContext();
     return useSuspenseModelQuery<TQueryFnData, TData, TError>('Device', `${endpoint}/device/count`, args, options, fetch);
 }
-import type { DeviceStatus } from '@prisma/client';
+import type { DeviceStatus } from '@zenstackhq/runtime/models';
 
-export function useCheckDevice<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string; description?: string; status?: DeviceStatus; deviceTypeId?: string; userId?: string; locationId?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
+export function useCheckDevice<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; name?: string; description?: string; status?: DeviceStatus; deviceTypeId?: string; userId?: string; locationId?: string; baseTopic?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
     const { endpoint, fetch } = getHooksContext();
     return useModelQuery<boolean, boolean, TError>('Device', `${endpoint}/device/check`, args, options, fetch);
 }

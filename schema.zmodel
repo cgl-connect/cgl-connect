@@ -6,7 +6,7 @@ plugin hooks {
   provider = '@zenstackhq/tanstack-query'
   target = 'react'
   version = 'v5'
-  output = "./src/lib/hooks"
+  output = "./src/lib/zenstack-hooks"
 }
 
 datasource db {
@@ -19,12 +19,16 @@ abstract model BaseModel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model User extends BaseModel {
   email    String   @unique
   password String   @password @omit
   name     String?
   role     Role     @default(USER)
   devices  Device[]
+  
+  ownedDashboards  Dashboard[] @relation("OwnedDashboards")
+  sharedDashboards Dashboard[] @relation("SharedDashboards")
 
   @@allow('create,read', true)
   @@allow('update,delete', auth().role == 'ADMIN')
@@ -35,9 +39,22 @@ enum Role {
   USER
 }
 
+enum TopicSuffix {
+  STATUS_ONOFF
+  STATUS_BRIGHTNESS
+  STATUS_COLOR
+  STATUS_TEMPERATURE
+  STATUS_HUMIDITY
+  COMMAND_ONOFF
+  COMMAND_BRIGHTNESS
+  COMMAND_COLOR
+  COMMAND_TEMPERATURE
+}
+
 model DeviceType extends BaseModel {
-  name    String   @unique
-  devices Device[]
+  name          String        @unique
+  devices       Device[]
+  topicSuffixes TopicSuffix[]
 
   @@allow('all', true)
 }
@@ -59,8 +76,12 @@ model Device extends BaseModel {
   user         User?        @relation(fields: [userId], references: [id])
   locationId   String?
   location     Location?    @relation(fields: [locationId], references: [id])
+
+  baseTopic    String       @unique
   telemetry    Telemetry[]
   alerts       Alert[]
+  
+  dashboards   DashboardDevice[]
 
   @@allow('all', true)
 }
@@ -69,17 +90,67 @@ model Location extends BaseModel {
   name    String
   address String?
   devices Device[]
+
+  @@allow('all', true)
 }
 
 model Telemetry extends BaseModel {
-  deviceId String
-  device   Device @relation(fields: [deviceId], references: [id])
-  data     Json
+  receivedAt  DateTime    @default(now())
+  data        Json
+  topicSuffix TopicSuffix
+
+  device      Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId    String
+
+  @@index([deviceId, topicSuffix, receivedAt])
+  @@allow('all', true)
 }
 
 model Alert extends BaseModel {
   deviceId String
-  device   Device @relation(fields: [deviceId], references: [id])
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   severity String
   message  String
+}
+
+enum WidgetSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+type DashboardDeviceLayout {
+  width WidgetSize
+  height WidgetSize
+  order Int @default(0)
+}
+
+model Dashboard extends BaseModel {
+  name        String
+  description String?
+  isPublic    Boolean      @default(false)
+  
+  owner       User         @relation(fields: [ownerId], references: [id], name: "OwnedDashboards")
+  ownerId     String
+  
+  sharedWith  User[]       @relation(name: "SharedDashboards")
+  
+  devices     DashboardDevice[]
+
+  @@allow('create', auth() != null)
+  @@allow('read', isPublic == true || owner == auth() || sharedWith?[auth()])
+  @@allow('update,delete', owner == auth())
+}
+
+model DashboardDevice extends BaseModel {
+  dashboard     Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  dashboardId   String
+  device        Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId      String
+  
+  layout        DashboardDeviceLayout @json
+  
+  @@unique([dashboardId, deviceId])
+  @@allow('read', dashboard.isPublic == true)
+  @@allow('all', dashboard.owner == auth() || dashboard.sharedWith?[auth()])
 }

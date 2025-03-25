@@ -17,47 +17,70 @@ enum Role {
   USER
 }
 
+enum TopicSuffix {
+  STATUS_ONOFF
+  STATUS_BRIGHTNESS
+  STATUS_COLOR
+  STATUS_TEMPERATURE
+  STATUS_HUMIDITY
+  COMMAND_ONOFF
+  COMMAND_BRIGHTNESS
+  COMMAND_COLOR
+  COMMAND_TEMPERATURE
+}
+
 enum DeviceStatus {
   ONLINE
   OFFLINE
   UNKNOWN
 }
 
+enum WidgetSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
 model User {
-  id        String   @id() @default(ulid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  email     String   @unique()
-  password  String
-  name      String?
-  role      Role     @default(USER)
-  devices   Device[]
+  id               String      @id() @default(ulid())
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt()
+  email            String      @unique()
+  password         String
+  name             String?
+  role             Role        @default(USER)
+  devices          Device[]
+  ownedDashboards  Dashboard[] @relation("OwnedDashboards")
+  sharedDashboards Dashboard[] @relation("SharedDashboards")
 }
 
 model DeviceType {
-  id        String   @id() @default(ulid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  name      String   @unique()
-  devices   Device[]
+  id            String        @id() @default(ulid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt()
+  name          String        @unique()
+  devices       Device[]
+  topicSuffixes TopicSuffix[]
 }
 
 model Device {
-  id           String       @id() @default(ulid())
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt()
+  id           String            @id() @default(ulid())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt()
   name         String
   description  String?
-  status       DeviceStatus @default(UNKNOWN)
+  status       DeviceStatus      @default(UNKNOWN)
   metadata     Json?
-  deviceType   DeviceType   @relation(fields: [deviceTypeId], references: [id])
+  deviceType   DeviceType        @relation(fields: [deviceTypeId], references: [id])
   deviceTypeId String
   userId       String?
-  user         User?        @relation(fields: [userId], references: [id])
+  user         User?             @relation(fields: [userId], references: [id])
   locationId   String?
-  location     Location?    @relation(fields: [locationId], references: [id])
+  location     Location?         @relation(fields: [locationId], references: [id])
+  baseTopic    String            @unique()
   telemetry    Telemetry[]
   alerts       Alert[]
+  dashboards   DashboardDevice[]
 }
 
 model Location {
@@ -70,12 +93,16 @@ model Location {
 }
 
 model Telemetry {
-  id        String   @id() @default(ulid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  deviceId  String
-  device    Device   @relation(fields: [deviceId], references: [id])
-  data      Json
+  id          String      @id() @default(ulid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt()
+  receivedAt  DateTime    @default(now())
+  data        Json
+  topicSuffix TopicSuffix
+  device      Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId    String
+
+  @@index([deviceId, topicSuffix, receivedAt])
 }
 
 model Alert {
@@ -83,7 +110,33 @@ model Alert {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
   deviceId  String
-  device    Device   @relation(fields: [deviceId], references: [id])
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   severity  String
   message   String
+}
+
+model Dashboard {
+  id          String            @id() @default(ulid())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt()
+  name        String
+  description String?
+  isPublic    Boolean           @default(false)
+  owner       User              @relation(fields: [ownerId], references: [id], name: "OwnedDashboards")
+  ownerId     String
+  sharedWith  User[]            @relation(name: "SharedDashboards")
+  devices     DashboardDevice[]
+}
+
+model DashboardDevice {
+  id          String    @id() @default(ulid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  dashboardId String
+  device      Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId    String
+  layout      Json
+
+  @@unique([dashboardId, deviceId])
 }

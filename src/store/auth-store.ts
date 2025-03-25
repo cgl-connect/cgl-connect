@@ -11,7 +11,6 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       rememberData: { remember: false, email: "" },
       setRememberData: (rememberData) => {
-        console.log("setting remember", rememberData);
         set({ rememberData });
       },
     }),

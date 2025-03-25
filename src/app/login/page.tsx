@@ -179,7 +179,7 @@ export default function LoginPage() {
 
           <div className="mt-4 text-center text-sm">
             <div className="text-gray-600">Test credentials:</div>
-            <div className="font-mono text-gray-800">Email: cgl@gmail.com</div>
+            <div className="font-mono text-gray-800">Email: cgl@email.com</div>
             <div className="font-mono text-gray-800">Password: password123</div>
           </div>
         </form>

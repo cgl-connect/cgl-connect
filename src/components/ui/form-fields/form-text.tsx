@@ -15,6 +15,7 @@ interface FormTextProps {
   placeholder?: string
   description?: string
   required?: boolean
+  type?: 'text' | 'password'
 }
 
 export function FormText({
@@ -25,6 +26,9 @@ export function FormText({
   required = false
 }: FormTextProps) {
   const { control } = useFormContext()
+
+  // TODO: implement type password field
+
   
   return (
     <FormField

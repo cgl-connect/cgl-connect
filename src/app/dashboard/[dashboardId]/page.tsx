@@ -22,7 +22,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import DeviceWidget from "@/components/dashboard/device-widget";
 import AddDeviceToDashboardModal from "@/components/dashboard/add-device-modal";
 
-export default function DashboardDetailPage({ params }: { params: { dashboardId: string } }) {
+export default function DashboardDetailPage({ params }: any){
   const router = useRouter();
   const dashboardId = params.dashboardId;
   const [isEditMode, setIsEditMode] = useState(false);

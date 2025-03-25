@@ -18,7 +18,7 @@ import DashboardWidgetsContainer from '@/components/dashboard/dashboard-widgets-
 import { useToast } from '@/lib/hooks/toast'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
-export default function SingleDashboardPage({ params }: { params: { id: string } }) {
+export default function SingleDashboardPage({ params }: any) {
   const dashboardId = params.id
   const router = useRouter()
   const toast = useToast()

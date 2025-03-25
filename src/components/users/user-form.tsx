@@ -101,7 +101,7 @@ export default function UserForm({
       updateUser(
         {
           where: { id: userData.id },
-          data,
+          data: data as any,
         },
         {
           onSuccess: () => {
@@ -136,7 +136,7 @@ export default function UserForm({
 
       createUser(
         {
-          data: data as Prisma.UserCreateInput,
+          data: data as any,
         },
         {
           onSuccess: () => {

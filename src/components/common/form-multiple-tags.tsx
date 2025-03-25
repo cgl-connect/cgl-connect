@@ -33,7 +33,6 @@ export function FormMultipleTags({
 
     const currentTags = form.getValues(name) || [];
     
-    // Don't add duplicate tags
     if (!currentTags.includes(value)) {
       form.setValue(name, [...currentTags, value], { shouldValidate: true });
     }
@@ -61,7 +60,7 @@ export function FormMultipleTags({
     const currentTags = form.getValues(name) || [];
     form.setValue(
       name,
-      currentTags.filter((_, index) => index !== indexToRemove),
+      currentTags.filter((_: any, index: number) => index !== indexToRemove),
       { shouldValidate: true }
     );
   };

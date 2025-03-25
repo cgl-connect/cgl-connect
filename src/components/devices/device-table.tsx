@@ -149,7 +149,7 @@ export default function DeviceTable({ devices, onRefresh }: DeviceTableProps) {
             setEditingDevice(null);
             onRefresh();
           }}
-          deviceData={editingDevice}
+          deviceId={editingDevice.id}
         />
       )}
 

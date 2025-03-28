@@ -13,12 +13,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { useRouter } from 'next/navigation'
 
 export default function UserDropdown() {
   const { data: session } = useSession()
+  const router = useRouter()
   
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' })
+    await signOut().then(() => router.push('/login'))
   }
 
   const userInitials = session?.user?.name 

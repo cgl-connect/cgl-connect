@@ -64,7 +64,7 @@ export default function Sidebar() {
       <div className="py-4 px-3 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center justify-center">
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            UFMT IoT
+          CGL Connect
           </h1>
         </div>
       </div>

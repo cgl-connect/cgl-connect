@@ -83,11 +83,11 @@ export default function LocationTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>Devices</TableHead>
-            <TableHead>Last Updated</TableHead>
-            <TableHead className="w-[80px]">Actions</TableHead>
+            <TableHead>Nome</TableHead>
+            <TableHead>Endereço</TableHead>
+            <TableHead>Dispositivos</TableHead>
+            <TableHead>Última Atualização</TableHead>
+            <TableHead className="w-[80px]">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -95,7 +95,7 @@ export default function LocationTable({
             <TableRow key={location.id}>
               <TableCell className="font-medium">{location.name}</TableCell>
               <TableCell>
-                {location.address || <span className="text-muted-foreground text-sm">Not specified</span>}
+                {location.address || <span className="text-muted-foreground text-sm">Não especificado</span>}
               </TableCell>
               <TableCell>{location._count?.devices || 0}</TableCell>
               <TableCell>{dayJs(location.updatedAt).fromNow()}</TableCell>
@@ -111,14 +111,14 @@ export default function LocationTable({
                       onClick={() => onClickEdit(location.id)}
                     >
                       <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                      Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setLocationToDelete(location.id)}
                       className="text-red-600"
                     >
                       <Trash className="mr-2 h-4 w-4" />
-                      Delete
+                      Excluir
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -134,19 +134,20 @@ export default function LocationTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Confirmar exclusão
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              location. Any devices associated with this location may be affected.
+              Tem certeza que deseja excluir esta localização? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

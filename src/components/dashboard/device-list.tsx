@@ -155,7 +155,7 @@ export default function DeviceList() {
               <TableHead>Localização</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Última Atividade</TableHead>
-              <TableHead>MQTT Topic</TableHead>
+              <TableHead>Tópico Base</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

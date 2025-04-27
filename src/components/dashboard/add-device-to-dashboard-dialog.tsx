@@ -7,11 +7,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useFindManyDevice, useCreateDashboardDevice } from '@/lib/zenstack-hooks'
+import {
+  useFindManyDevice,
+  useCreateDashboardDevice,
+} from '@/lib/zenstack-hooks'
 import {
   Select,
   SelectContent,
@@ -36,21 +39,18 @@ export default function AddDeviceToDashboardDialog({
   isOpen,
   onClose,
   dashboardId,
-  onDeviceAdded
+  onDeviceAdded,
 }: AddDeviceToDashboardDialogProps) {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
   const [widgetSize, setWidgetSize] = useState<WidgetSize>('MEDIUM')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const toast = useToast()
 
-  const {
-    data: devices,
-    isLoading
-  } = useFindManyDevice({
+  const { data: devices, isLoading } = useFindManyDevice({
     include: {
       deviceType: true,
-      location: true
-    }
+      location: true,
+    },
   })
 
   const { mutate: createDashboardDevice } = useCreateDashboardDevice()
@@ -70,9 +70,9 @@ export default function AddDeviceToDashboardDialog({
           layout: {
             width: widgetSize,
             height: widgetSize,
-            order: 0
-          }
-        }
+            order: 0,
+          },
+        },
       },
       {
         onSuccess: () => {
@@ -80,12 +80,12 @@ export default function AddDeviceToDashboardDialog({
           toast.success('Device added to dashboard')
           onDeviceAdded()
         },
-        onError: (error) => {
+        onError: error => {
           setIsSubmitting(false)
           console.error('Error adding device to dashboard:', error)
           toast.exception(error)
-        }
-      }
+        },
+      },
     )
   }
 
@@ -130,9 +130,9 @@ export default function AddDeviceToDashboardDialog({
   }
 
   return (
-    <Dialog 
-      open={isOpen} 
-      onOpenChange={(open) => {
+    <Dialog
+      open={isOpen}
+      onOpenChange={open => {
         if (!open) {
           reset()
           onClose()
@@ -141,9 +141,10 @@ export default function AddDeviceToDashboardDialog({
     >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Device to Dashboard</DialogTitle>
+          <DialogTitle>Adicionar Dispositivo ao Dashboard</DialogTitle>
           <DialogDescription>
-            Select a device to add to your dashboard and configure its display
+            Selecione um dispositivo e configure como ele será exibido no
+            dashboard.
           </DialogDescription>
         </DialogHeader>
 
@@ -154,79 +155,59 @@ export default function AddDeviceToDashboardDialog({
         ) : (
           <>
             <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium block mb-2">
-                  Select Device
-                </label>
-                <ScrollArea className="h-60 rounded-md border">
-                  <div className="p-4 space-y-2">
-                    {devices?.map(device => (
-                      <div
-                        key={device.id}
-                        className={`p-3 rounded-md border cursor-pointer transition-colors ${
-                          selectedDeviceId === device.id 
-                            ? 'border-primary bg-primary/10' 
-                            : 'hover:bg-muted'
-                        }`}
-                        onClick={() => setSelectedDeviceId(device.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="font-medium">{device.name}</div>
-                          {getStatusBadge(device.status)}
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {device.deviceType.name}
-                          {device.location && ` • ${device.location.name}`}
-                        </div>
-                        <div className="text-xs font-mono text-muted-foreground mt-1">
-                          {device.baseTopic}
-                        </div>
-                      </div>
-                    ))}
-
-                    {devices?.length === 0 && (
-                      <div className="py-6 text-center text-muted-foreground">
-                        No devices available. Create a device first.
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium block mb-2">
-                  Widget Size
-                </label>
-                <Select
-                  value={widgetSize}
-                  onValueChange={(value) => setWidgetSize(value as WidgetSize)}
-                >
+              <div className="space-y-2">
+                <Label>Dispositivo</Label>
+                <Select onValueChange={setSelectedDevice}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select widget size" />
+                    <SelectValue placeholder="Selecione um dispositivo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="SMALL">Small</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="LARGE">Large</SelectItem>
+                    {devices?.map(device => (
+                      <SelectItem key={device.id} value={device.id}>
+                        {device.name}
+                        <Badge variant="outline" className="ml-2">
+                          {device.status === 'ONLINE' ? (
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                          ) : device.status === 'OFFLINE' ? (
+                            <WifiOff className="h-3 w-3 text-red-500" />
+                          ) : (
+                            <AlertTriangle className="h-3 w-3 text-yellow-500" />
+                          )}
+                        </Badge>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tamanho do Widget</Label>
+                <Select onValueChange={setWidgetSize}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tamanho" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SMALL">Pequeno</SelectItem>
+                    <SelectItem value="MEDIUM">Médio</SelectItem>
+                    <SelectItem value="LARGE">Grande</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-                Cancel
+              <Button variant="outline" onClick={onClose}>
+                Cancelar
               </Button>
-              <Button 
-                onClick={handleAddDevice} 
-                disabled={!selectedDeviceId || isSubmitting}
-              >
-                {isSubmitting ? (
+              <Button onClick={handleAddDevice} disabled={isLoading}>
+                {isLoading ? (
                   <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Adding...
+                    <LoadingSpinner size="sm" />
+                    <span className="ml-2">Adicionando...</span>
                   </>
-                ) : 'Add to Dashboard'}
+                ) : (
+                  'Adicionar'
+                )}
               </Button>
             </DialogFooter>
           </>

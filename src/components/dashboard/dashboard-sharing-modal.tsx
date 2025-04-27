@@ -106,9 +106,9 @@ export default function DashboardSharingModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Dashboard</DialogTitle>
+          <DialogTitle>Compartilhar Dashboard</DialogTitle>
           <DialogDescription>
-            Control who can access this dashboard
+            Gerencie as configurações de compartilhamento do seu dashboard
           </DialogDescription>
         </DialogHeader>
         
@@ -119,13 +119,13 @@ export default function DashboardSharingModal({
         ) : (
           <>
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={isPublic} 
-                  onCheckedChange={setIsPublic} 
+              <div className="flex items-center justify-between space-x-2">
+                <Label htmlFor="public">Dashboard Público</Label>
+                <Switch
                   id="public"
+                  checked={isPublic}
+                  onCheckedChange={setIsPublic}
                 />
-                <Label htmlFor="public">Make dashboard public</Label>
               </div>
               
               {isPublic && (
@@ -142,9 +142,9 @@ export default function DashboardSharingModal({
               )}
               
               <div className="space-y-2">
-                <Label>Share with specific users</Label>
+                <Label>Compartilhe com usuários específicos</Label>
                 <Input
-                  placeholder="Search users by name or email"
+                  placeholder="Busque por nome ou email"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -174,7 +174,7 @@ export default function DashboardSharingModal({
                 )}
                 
                 {searchQuery.length > 2 && users && users.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No users found</p>
+                  <p className="text-sm text-muted-foreground">Nenhum usuário encontrado</p>
                 )}
                 
                 {selectedUsers.length > 0 && (
@@ -206,16 +206,16 @@ export default function DashboardSharingModal({
             
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>
-                Cancel
+              Cancelar
               </Button>
               <Button onClick={handleSave} disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Saving...
+                    Salvando...
                   </>
                 ) : (
-                  "Save"
+                  "Salvar"
                 )}
               </Button>
             </DialogFooter>

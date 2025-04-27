@@ -76,7 +76,7 @@ export default function DashboardDetailPage({ params }: any){
                 onClick={() => setIsEditMode(!isEditMode)}
               >
                 <Edit className="h-4 w-4 mr-2" />
-                {isEditMode ? "Save Layout" : "Edit Layout"}
+                {isEditMode ? "Salvar Layout" : "Editar Layout"}
               </Button>
               <Button 
                 variant="outline" 
@@ -84,7 +84,7 @@ export default function DashboardDetailPage({ params }: any){
                 onClick={() => setIsAddDeviceModalOpen(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Device
+                Adicionar Dispositivo
               </Button>
               <Button 
                 variant="outline" 
@@ -92,7 +92,7 @@ export default function DashboardDetailPage({ params }: any){
                 onClick={() => setIsSharingModalOpen(true)}
               >
                 <Share2 className="h-4 w-4 mr-2" />
-                Share
+                Compartilhar
               </Button>
               <Button 
                 variant="outline" 
@@ -101,7 +101,7 @@ export default function DashboardDetailPage({ params }: any){
                 onClick={() => setIsDeleteDialogOpen(true)}
               >
                 <Trash className="h-4 w-4 mr-2" />
-                Delete
+                Excluir
               </Button>
             </div>
           </div>
@@ -113,11 +113,11 @@ export default function DashboardDetailPage({ params }: any){
           {dashboardDevices?.length === 0 ? (
             <div className="flex flex-col items-center justify-center border border-dashed rounded-lg p-12 mt-8">
               <LayoutGrid className="h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">This dashboard is empty</h3>
-              <p className="text-muted-foreground mb-6">Add devices to create your custom dashboard</p>
+              <h3 className="text-lg font-medium mb-2">Este dashboard está vazio</h3>
+              <p className="text-muted-foreground mb-6">Adicione dispositivos para criar seu dashboard personalizado</p>
               <Button onClick={() => setIsAddDeviceModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Your First Device
+                Adicionar Primeiro Dispositivo
               </Button>
             </div>
           ) : (
@@ -153,18 +153,18 @@ export default function DashboardDetailPage({ params }: any){
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete the dashboard and remove all device associations.
+                  Isso excluirá permanentemente o dashboard e removerá todas as associações com dispositivos.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={handleDeleteDashboard}
                   className="bg-destructive text-destructive-foreground"
                 >
-                  Delete
+                  Excluir
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -172,12 +172,12 @@ export default function DashboardDetailPage({ params }: any){
         </>
       ) : (
         <div className="text-center py-8">
-          <p>Dashboard not found or you don't have access to it.</p>
+          <p>Dashboard não encontrado ou você não tem acesso a ele.</p>
           <Button 
             variant="link" 
             onClick={() => router.push('/dashboard')}
           >
-            Back to Dashboards
+            Voltar para Dashboards
           </Button>
         </div>
       )}

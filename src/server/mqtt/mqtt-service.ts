@@ -27,6 +27,10 @@ export class MqttService extends EventEmitter {
     return this.client.isClientConnected()
   }
 
+  public reconnect(): void {
+    this.client.reconnect()
+  }
+
   constructor(options: MqttServiceOptions) {
     super()
 

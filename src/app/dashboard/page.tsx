@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Dashboard } from '@prisma/client'
+import { useSession } from 'next-auth/react'
 
 export default function DashboardsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -29,6 +30,7 @@ export default function DashboardsPage() {
     string | undefined
   >()
   const [searchQuery, setSearchQuery] = useState('')
+  const { data: session } = useSession()
 
   const {
     data: dashboards,
@@ -50,10 +52,10 @@ export default function DashboardsPage() {
   )
 
   const myDashboards = filteredDashboards?.filter(
-    dashboard => dashboard.ownerId === dashboard.owner.id,
+    dashboard => dashboard.ownerId === session?.user?.id,
   )
   const sharedDashboards = filteredDashboards?.filter(
-    dashboard => dashboard.ownerId !== dashboard.owner.id,
+    dashboard => dashboard.ownerId !== session?.user?.id,
   )
 
   const handleAddNew = () => {

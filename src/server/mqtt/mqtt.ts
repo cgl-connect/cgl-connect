@@ -33,7 +33,8 @@ export class MqttClient extends EventEmitter {
     // Set default options if not provided
     const defaultOptions: MqttConnectionOptions = {
       reconnectPeriod: 5000,
-      connectTimeout: 10000,
+      connectTimeout: 0,
+      reconnectOnConnackError: true,
       ...options
     }
 

@@ -8,17 +8,24 @@ let initialized = false
  * Initialize the MQTT service (server-only)
  */
 export async function initializeMqttService() {
-    console.log("call initialize mqtt")
-  if (initialized) return
+  console.log('call initialize mqtt')
+  const status = await getMqttServiceStatus()
+
+  if (status.status === 'error') {
+    console.error('Error getting MQTT service status:', status.error)
+    return
+  }
+
+  if (status.connected) return
+
   try {
     await startMqttService()
-    initialized = true
     console.log('MQTT service initialized successfully')
   } catch (error) {
     console.error('Failed to initialize MQTT service:', error)
   }
 
-  return { initialized }
+  return { initialized: initialized }
 }
 
 /**
@@ -34,7 +41,7 @@ export async function getMqttServiceStatus() {
     const isRunning = service.isRunning ? 'running' : 'stopped'
     return {
       status: isRunning,
-      connected: service.isClientConnected()
+      connected: service.isClientConnected(),
     }
   } catch (error) {
     return { status: 'error', error: String(error) }

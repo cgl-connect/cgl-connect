@@ -5,10 +5,9 @@ import {
   type DefaultSession,
   type NextAuthOptions,
 } from 'next-auth'
-import { type Adapter } from 'next-auth/adapters'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { db } from './db'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
+
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -47,7 +46,6 @@ export const authOptions: NextAuthOptions = {
       return session
     },
   },
-  adapter: PrismaAdapter(db) as Adapter,
   providers: [
     CredentialsProvider({
       credentials: {
